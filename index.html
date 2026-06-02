@@ -351,7 +351,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
   </div>
 
   <div class="card">
-    <div class="card-title"><span>🔍 Pedidos Registrados</span><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div>
+    <div class="card-title"><span>🔍 Pedidos Registrados</span><div style="display:flex;gap:.4rem"><button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
     <div class="day-tabs" id="orderDayTabs"></div>
     <div class="fgrid" style="margin-bottom:.75rem;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       <div class="fgroup"><label>Turno</label><select id="filterTurno" class="fc" onchange="renderOrdersTable()"><option value="">Todos</option><option value="Aper">Apertura</option><option value="Medio">Medio</option><option value="Cierre">Cierre</option></select></div>
@@ -822,6 +822,99 @@ const uz=document.getElementById('uploadZone');
 uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover')});
 uz.addEventListener('dragleave',()=>uz.classList.remove('dragover'));
 uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dragover');const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)handleMultiUpload({target:{files}});});
+
+/* ══ EXPORT PDF ══ */
+window.exportPDF = function(){
+  // Determine which orders to export: current day + filters
+  const filterTurno=(document.getElementById('filterTurno')||{value:''}).value;
+  const filterResp=(document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
+  const searchQ=(document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  let items=[...allOrders].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  if(selectedOrderDay)items=items.filter(o=>dateKey(o.fecha)===selectedOrderDay);
+  if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
+  if(filterResp)items=items.filter(o=>(o.responsable||'').toLowerCase().includes(filterResp));
+  if(searchQ)items=items.filter(o=>o.orderNumber.toLowerCase().includes(searchQ));
+  if(!items.length){toast('No hay pedidos para exportar','err');return;}
+
+  const turnoLabel={Aper:'Apertura',Medio:'Medio Día',Cierre:'Cierre'};
+  const dayLabel=selectedOrderDay||dateKey(new Date().toISOString());
+
+  const rows=items.map((o,idx)=>`
+    <div class="order-card">
+      <div class="order-img-wrap">
+        <img src="${o.imageDataUrl}" alt="Ticket pedido ${escHtml(o.orderNumber)}"/>
+      </div>
+      <div class="order-info">
+        <div class="order-num">#${escHtml(o.orderNumber||'desconocido')}</div>
+        <div class="order-field"><span class="field-label">Responsable</span><span class="field-val">${escHtml(o.responsable||'—')}</span></div>
+        <div class="order-field"><span class="field-label">Turno</span><span class="field-val">${escHtml(turnoLabel[o.turno]||o.turno||'—')}</span></div>
+        <div class="order-field"><span class="field-label">Fecha</span><span class="field-val">${fmtDate(o.fecha)}</span></div>
+        <div class="order-index">${idx+1} / ${items.length}</div>
+      </div>
+    </div>`).join('');
+
+  const html=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>McDash — Pedidos ${dayLabel}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#111;padding:0}
+  .header{background:#C8102E;color:#fff;padding:1.2rem 2rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+  .header h1{font-size:1.6rem;font-weight:800;letter-spacing:.04em}
+  .header .sub{font-size:.85rem;opacity:.85;margin-top:.15rem}
+  .header .logo{width:44px;height:44px;background:#FFB800;border-radius:50%;display:grid;place-items:center;font-size:1.5rem;font-weight:900;color:#C8102E;flex-shrink:0}
+  .summary{padding:.5rem 2rem 1.2rem;font-size:.82rem;color:#555;border-bottom:1px solid #eee;margin-bottom:1.5rem}
+  .summary strong{color:#111}
+  .order-card{display:flex;gap:1.5rem;padding:1.2rem 2rem;border-bottom:1px solid #e5e5e5;break-inside:avoid;page-break-inside:avoid}
+  .order-card:last-child{border-bottom:none}
+  .order-img-wrap{flex-shrink:0;width:180px;height:180px;border-radius:10px;overflow:hidden;border:1.5px solid #ddd}
+  .order-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+  .order-info{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.5rem}
+  .order-num{font-size:2rem;font-weight:900;color:#C8102E;letter-spacing:.04em;line-height:1}
+  .order-field{display:flex;gap:.5rem;align-items:baseline}
+  .field-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#999;width:90px;flex-shrink:0}
+  .field-val{font-size:.95rem;color:#111;font-weight:600}
+  .order-index{margin-top:auto;font-size:.7rem;color:#bbb;text-align:right}
+  @media print{
+    body{padding:0}
+    .header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .order-card{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">M</div>
+  <div>
+    <h1>McDash — Registro de Pedidos</h1>
+    <div class="sub">Fecha: ${dayLabel} &nbsp;·&nbsp; Total: ${items.length} pedido${items.length!==1?'s':''} &nbsp;·&nbsp; Generado: ${new Date().toLocaleString('es-AR')}</div>
+  </div>
+</div>
+<div class="summary">
+  <strong>${items.length}</strong> pedido${items.length!==1?'s':''} exportado${items.length!==1?'s':''}
+  ${filterTurno?' · Turno: <strong>'+escHtml(turnoLabel[filterTurno]||filterTurno)+'</strong>':''}
+  ${filterResp?' · Responsable contiene: <strong>'+escHtml(filterResp)+'</strong>':''}
+</div>
+${rows}
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(w){
+    w.onload=()=>{
+      setTimeout(()=>{w.print();URL.revokeObjectURL(url);},400);
+    };
+  } else {
+    // fallback: direct download
+    const a=document.createElement('a');a.href=url;a.download=`mcdash-pedidos-${dayLabel.replace('/','')}.html`;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }
+  toast(`PDF listo — ${items.length} pedido${items.length!==1?'s':''}`, 'ok');
+};
 
 /* ══ REALTIME LISTENERS ══ */
 function setupListeners(){
