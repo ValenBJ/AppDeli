@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#C8102E"/>
+<title>McDash — Gestión de Turno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --red:#C8102E;--red2:#A50025;--red-glow:rgba(200,16,46,.4);
+  --gold:#FFB800;--gold2:#E6A500;--gold-glow:rgba(255,184,0,.35);
+  --bg:#0D0D0D;--surface:#161616;--surface2:#1F1F1F;--surface3:#2A2A2A;
+  --border:#2E2E2E;--border2:#3A3A3A;
+  --text:#F0F0F0;--muted:#888;--faint:#444;
+  --green:#22C55E;--orange:#F97316;--blue:#3B82F6;
+  --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;
+  --shadow-red:0 0 24px var(--red-glow);
+  --shadow-gold:0 0 24px var(--gold-glow);
+  --t:.18s cubic-bezier(.4,0,.2,1);
+  --font-display:'Bebas Neue',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+::selection{background:var(--gold);color:#000}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+.shell{display:grid;grid-template-rows:auto auto 1fr;min-height:100dvh}
+header{background:var(--red);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;height:58px;position:sticky;top:0;z-index:200;box-shadow:0 2px 20px var(--red-glow);}
+.hb{display:flex;align-items:center;gap:.75rem}
+.hb-logo{width:36px;height:36px;border-radius:50%;background:var(--gold);display:grid;place-items:center;font-family:var(--font-display);font-size:1.4rem;color:var(--red);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.hb-name{font-family:var(--font-display);font-size:1.7rem;letter-spacing:.04em;line-height:1}
+.hb-name span{color:var(--gold)}
+.header-right{display:flex;align-items:center;gap:.75rem}
+.clock{font-family:var(--font-display);font-size:1.1rem;color:rgba(255,255,255,.7);letter-spacing:.1em}
+.date-badge{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(0,0,0,.25);border-radius:99px;padding:.25rem .65rem;color:rgba(255,255,255,.8);}
+nav.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:58px;z-index:190;}
+nav.tabs button{flex:1;padding:.8rem .5rem;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-family:var(--font-display);font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:color var(--t),border-color var(--t),background var(--t);}
+nav.tabs button:hover{color:var(--text);background:var(--surface2)}
+nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(255,184,0,.05)}
+main{padding:1.25rem;max-width:860px;margin:0 auto;width:100%}
+.tab-panel{display:none;animation:fadeUp .25s ease both}
+.tab-panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stitle{font-family:var(--font-display);font-size:1.9rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem;}
+.stitle .chip{font-family:var(--font-body);font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:#000;padding:.2rem .55rem;border-radius:99px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.1rem;}
+.card-title{font-family:var(--font-display);font-size:1.1rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+.card-title span{display:flex;align-items:center;gap:.4rem}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.9rem}
+.fgroup{display:flex;flex-direction:column;gap:.35rem}
+.fgroup label{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fgroup label .req{color:var(--gold);margin-left:.15rem}
+.fc{background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:.92rem;padding:.6rem .8rem;width:100%;outline:none;transition:border-color var(--t),box-shadow var(--t);appearance:none;}
+.fc:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23888' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem;cursor:pointer;}
+select.fc option{background:var(--surface2)}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.55}
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.65rem 1.3rem;border:none;border-radius:var(--r-sm);font-family:var(--font-display);font-size:.95rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all var(--t);text-decoration:none;}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:var(--shadow-gold)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red2);box-shadow:var(--shadow-red)}
+.btn-ghost{background:var(--surface3);color:var(--muted);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text);background:var(--border)}
+.btn-sm{padding:.38rem .8rem;font-size:.8rem}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-row{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap}
+.day-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.day-tab{padding:.35rem .85rem;border-radius:99px;cursor:pointer;border:1.5px solid var(--border2);background:var(--surface2);color:var(--muted);transition:all var(--t);font-family:var(--font-display);font-size:.9rem;}
+.day-tab:hover{color:var(--text)}
+.day-tab.active{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:var(--shadow-gold)}
+.day-tab.today-marker{border-color:var(--red)}
+.history-list{display:flex;flex-direction:column;gap:.65rem}
+.history-item{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:.9rem 1.1rem;display:flex;align-items:flex-start;gap:.9rem;transition:border-color var(--t);}
+.history-item:hover{border-color:var(--gold)}
+.hi-badge{flex-shrink:0;padding:.28rem .7rem;border-radius:99px;font-family:var(--font-display);font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid;}
+.badge-aper{background:rgba(255,184,0,.15);color:var(--gold);border-color:rgba(255,184,0,.35)}
+.badge-medio{background:rgba(249,115,22,.15);color:var(--orange);border-color:rgba(249,115,22,.35)}
+.badge-cierre{background:rgba(59,130,246,.15);color:var(--blue);border-color:rgba(59,130,246,.35)}
+.hi-meta{flex:1;min-width:0}
+.hi-resp{font-size:.78rem;font-weight:600;color:var(--gold);margin-bottom:.3rem;letter-spacing:.03em}
+.hi-date{font-size:.72rem;color:var(--faint);font-family:var(--font-display);letter-spacing:.05em}
+.hi-note{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}
+.hi-photos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem}
+.hi-thumb{width:56px;height:56px;border-radius:6px;overflow:hidden;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;transition:border-color var(--t),transform var(--t);}
+.hi-thumb:hover{border-color:var(--gold);transform:scale(1.06)}
+.hi-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.hi-thumb-label{font-size:.6rem;text-align:center;color:var(--muted);margin-top:.15rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.photo-upload-block{margin-bottom:.75rem}
+.pub-label{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+.opt-badge{font-size:.6rem;background:var(--surface3);border:1px solid var(--border2);color:var(--faint);padding:.1rem .4rem;border-radius:99px;letter-spacing:.06em}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r-md);padding:1.25rem;text-align:center;cursor:pointer;transition:all var(--t);background:var(--surface2);position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--gold);background:rgba(255,184,0,.04)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-icon{font-size:1.6rem}
+.uz-label{font-family:var(--font-display);font-size:1rem;color:var(--muted);letter-spacing:.04em}
+.uz-hint{font-size:.7rem;color:var(--faint)}
+.thumb-preview-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+.thumb-preview{position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;}
+.thumb-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-actions{display:flex;gap:.3rem;margin-top:.3rem}
+.thumb-remove{background:rgba(0,0,0,.7);border:none;border-radius:50%;width:18px;height:18px;color:#fff;font-size:.65rem;cursor:pointer;display:grid;place-items:center;position:absolute;top:2px;right:2px;}
+.orders-meta{font-size:.75rem;color:var(--muted);margin-bottom:.6rem;font-family:var(--font-display);letter-spacing:.04em}
+.orders-meta strong{color:var(--gold)}
+.table-wrap{overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:460px}
+thead tr{background:var(--surface2);border-bottom:2px solid var(--border2)}
+thead th{padding:.6rem .9rem;text-align:left;font-family:var(--font-display);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+tbody tr{border-bottom:1px solid var(--border);transition:background var(--t)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tbody tr.selected-row{background:rgba(255,184,0,.07)!important}
+tbody td{padding:.7rem .9rem;font-size:.87rem;vertical-align:middle}
+.order-num{font-family:var(--font-display);font-size:1.05rem;color:var(--gold);letter-spacing:.04em}
+.tbl-thumb{width:50px;height:50px;border-radius:6px;overflow:hidden;border:1.5px solid var(--border2);cursor:pointer;transition:border-color var(--t),transform var(--t)}
+.tbl-thumb:hover{border-color:var(--gold);transform:scale(1.05)}
+.tbl-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.order-date{font-size:.75rem;color:var(--muted);font-family:var(--font-display);letter-spacing:.04em}
+.highlight{background:rgba(255,184,0,.3);border-radius:3px;padding:0 2px}
+.td-actions{display:flex;gap:.35rem;align-items:center}
+.expiry-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .45rem;border-radius:99px;}
+.exp-ok{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.exp-soon{background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.3)}
+.exp-old{background:rgba(200,16,46,.15);color:var(--red);border:1px solid rgba(200,16,46,.3)}
+/* bulk delete bar */
+.bulk-bar{display:none;align-items:center;gap:.75rem;background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.25);border-radius:var(--r-md);padding:.6rem 1rem;margin-bottom:.75rem;}
+.bulk-bar.visible{display:flex}
+.bulk-bar-label{font-size:.82rem;color:var(--gold);font-family:var(--font-display);letter-spacing:.05em;flex:1}
+/* checkbox */
+input[type=checkbox].row-check{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;place-items:center;backdrop-filter:blur(8px);}
+.modal-overlay.open{display:grid;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-xl);padding:1.25rem;max-width:96vw;max-height:96vh;overflow:auto;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.7);}
+.modal-close{position:absolute;top:.7rem;right:.7rem;background:var(--surface3);border:none;border-radius:50%;width:32px;height:32px;color:var(--text);font-size:.85rem;cursor:pointer;display:grid;place-items:center;z-index:2;transition:background var(--t);}
+.modal-close:hover{background:var(--red)}
+.modal-img{max-width:88vw;max-height:82vh;border-radius:var(--r-md);display:block;margin:0 auto}
+.modal-caption{margin-top:.7rem;font-family:var(--font-display);font-size:.95rem;color:var(--muted);letter-spacing:.05em;text-align:center}
+.modal-download{margin-top:.6rem;display:flex;justify-content:center}
+.empty{padding:2.5rem 1.5rem;text-align:center;color:var(--muted)}
+.empty .ei{font-size:2.5rem;margin-bottom:.5rem}
+.empty .et{font-family:var(--font-display);font-size:1.1rem;color:var(--muted);margin-bottom:.25rem;letter-spacing:.04em;text-transform:uppercase}
+.toast-wrap{position:fixed;bottom:1.25rem;right:1.25rem;z-index:900;display:flex;flex-direction:column;gap:.4rem;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-left:4px solid var(--gold);border-radius:var(--r-sm);padding:.65rem 1.1rem;font-size:.85rem;box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;align-items:center;gap:.5rem;max-width:300px;animation:slideIn .3s ease, fadeOut .4s ease 2.6s both;}
+.toast.err{border-left-color:var(--red)}
+.toast.ok{border-left-color:var(--green)}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(110%)}}
+@media(max-width:600px){
+  header{height:52px}nav.tabs{top:52px}
+  nav.tabs button{font-size:.9rem;padding:.7rem .4rem}
+  main{padding:.9rem}.stitle{font-size:1.5rem}
+  .fgrid{grid-template-columns:1fr}
+  .modal-img{max-width:94vw;max-height:78vh}
+}
+.mt1{margin-top:.4rem}.mt2{margin-top:.75rem}
+.text-sm{font-size:.8rem}.text-muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="hb">
+    <div class="hb-logo">M</div>
+    <div class="hb-name">Mc<span>Dash</span></div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="dateBadge"></div>
+    <div class="clock" id="clock"></div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="active" onclick="switchTab('turno',this)">📋 Pase de Turno</button>
+  <button onclick="switchTab('pedidos',this)">🛵 PedidosYa</button>
+</nav>
+
+<main>
+
+<!-- ═══ TAB PASE DE TURNO ═══ -->
+<section id="tab-turno" class="tab-panel active">
+  <h2 class="stitle">📋 Pase de Turno <span class="chip">NUEVO</span></h2>
+
+  <div class="card">
+    <div class="card-title"><span>⚡ Cargar Pase</span></div>
+    <div class="fgrid">
+      <div class="fgroup">
+        <label>Turno <span class="req">*</span></label>
+        <select id="t-turno" class="fc">
+          <option value="">— Seleccioná —</option>
+          <option value="Aper">🌅 Apertura</option>
+          <option value="Medio">☀️ Medio</option>
+          <option value="Cierre">🌙 Cierre</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Responsable <span class="req">*</span></label>
+        <input type="text" id="t-resp" class="fc" placeholder="Nombre del encargado" autocomplete="off"/>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.9rem">
+
+      <div class="photo-upload-block">
+        <span class="pub-label">📊 Foto TPH (GCs) <span class="req" style="color:var(--gold)">*</span></span>
+        <div class="upload-zone">
+          <input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('tph',event)"/>
+          <div class="uz-icon">📷</div><div class="uz-label">Sacar foto</div>
+          <div class="uz-hint">Pantalla TPH con GCs</div>
+        </div>
+        <div class="thumb-preview-row" id="prev-tph"></div>
+      </div>
+
+      <div class="photo-upload-block">
+        <span class="pub-label">⭐ Rating App <span class="opt-badge">opcional</span></span>
+        <div class="upload-zone">
+          <input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('rating',event)"/>
+          <div class="uz-icon">📷</div><div class="uz-label">Sacar foto</div>
+          <div class="uz-hint">Pantalla con estrellas</div>
+        </div>
+        <div class="thumb-preview-row" id="prev-rating"></div>
+      </div>
+
+      <div class="photo-upload-block">
+        <span class="pub-label">📦 Carro Delivery (Stock) <span class="req" style="color:var(--gold)">*</span></span>
+        <div class="upload-zone">
+          <input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('stock',event)"/>
+          <div class="uz-icon">📷</div><div class="uz-label">Sacar foto</div>
+          <div class="uz-hint">Carro de delivery</div>
+        </div>
+        <div class="thumb-preview-row" id="prev-stock"></div>
+      </div>
+
+      <div class="photo-upload-block">
+        <span class="pub-label">📝 Calificaciones <span class="opt-badge">opcional</span></span>
+        <div class="upload-zone">
+          <input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('califs',event)"/>
+          <div class="uz-icon">📷</div><div class="uz-label">Sacar foto</div>
+          <div class="uz-hint">Calificaciones del día</div>
+        </div>
+        <div class="thumb-preview-row" id="prev-califs"></div>
+      </div>
+
+    </div>
+    <div class="fgroup mt2">
+      <label>Notas adicionales (opcional)</label>
+      <textarea id="t-notas" class="fc" placeholder="Novedades del turno, incidentes, observaciones…" rows="3"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="clearTurnoForm()">Limpiar</button>
+      <button class="btn btn-primary" onclick="savePase()">💾 Guardar Pase</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>🕓 Historial</span>
+      <button class="btn btn-red btn-sm" onclick="clearAllPases()">Borrar todo</button>
+    </div>
+    <div class="day-tabs" id="paseDayTabs"></div>
+    <div id="paseHistory" class="history-list"></div>
+  </div>
+</section>
+
+<!-- ═══ TAB PEDIDOSYA ═══ -->
+<section id="tab-pedidos" class="tab-panel">
+  <h2 class="stitle">🛵 PedidosYa <span class="chip">MULTI</span></h2>
+
+  <div class="card">
+    <div class="card-title"><span>📷 Cargar Pedidos del Turno</span></div>
+    <div class="fgrid">
+      <div class="fgroup">
+        <label>Turno <span class="req">*</span></label>
+        <select id="order-turno" class="fc">
+          <option value="">— Seleccioná —</option>
+          <option value="Aper">🌅 Apertura</option>
+          <option value="Medio">☀️ Medio</option>
+          <option value="Cierre">🌙 Cierre</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Responsable <span class="req">*</span></label>
+        <input type="text" id="order-resp" class="fc" placeholder="Nombre del encargado" autocomplete="off"/>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="upload-zone" id="uploadZone" style="min-height:110px">
+      <input type="file" id="ticketInput" accept="image/*" multiple onchange="handleMultiUpload(event)"/>
+      <div class="uz-icon">📸</div>
+      <div class="uz-label">Tocá para subir fotos de tickets</div>
+      <div class="uz-hint">Podés seleccionar varias fotos a la vez</div>
+    </div>
+    <div id="multiPreviewWrap" style="margin-top:.75rem;display:none">
+      <div style="font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Fotos cargadas — editá los números si es necesario</div>
+      <div id="multiPreviewList" style="display:flex;flex-direction:column;gap:.65rem"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="resetOrderForm()">Limpiar</button>
+      <button class="btn btn-primary" id="saveOrderBtn" onclick="saveAllOrders()" disabled>💾 Guardar Todos</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>🔍 Pedidos Registrados</span>
+      <button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button>
+    </div>
+    <div class="day-tabs" id="orderDayTabs"></div>
+    <div class="fgrid" style="margin-bottom:.8rem;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      <div class="fgroup">
+        <label>Filtrar turno</label>
+        <select id="filterTurno" class="fc" onchange="renderOrdersTable()">
+          <option value="">Todos</option>
+          <option value="Aper">Apertura</option>
+          <option value="Medio">Medio</option>
+          <option value="Cierre">Cierre</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Filtrar responsable</label>
+        <input type="text" id="filterResp" class="fc" placeholder="Nombre…" oninput="renderOrdersTable()"/>
+      </div>
+      <div class="fgroup">
+        <label>Buscar pedido</label>
+        <input type="text" id="searchInput" class="fc" placeholder="N.° pedido…" oninput="renderOrdersTable()"/>
+      </div>
+    </div>
+    <!-- Bulk bar -->
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-bar-label" id="bulkLabel">0 seleccionados</span>
+      <button class="btn btn-red btn-sm" onclick="deleteSelected()">🗑 Eliminar seleccionados</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Cancelar</button>
+    </div>
+    <div class="orders-meta" id="ordersCount"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" class="row-check" id="checkAll" onchange="toggleAll(this)"/></th>
+            <th>Foto</th><th>N.° Pedido</th><th>Turno</th><th>Responsable</th><th>Fecha/Hora</th><th>Vigencia</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+      <div id="ordersEmpty" class="empty" style="display:none">
+        <div class="ei">📦</div>
+        <div class="et">Sin pedidos registrados</div>
+        <p class="text-sm">Subí fotos de tickets para comenzar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img id="modalImg" class="modal-img" src="" alt=""/>
+    <div class="modal-caption" id="modalCaption"></div>
+    <div class="modal-download">
+      <a id="modalDownload" class="btn btn-ghost btn-sm" download="foto.jpg" href="#">⬇ Descargar foto</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const DB_NAME='mcdash2';const DB_VER=2;
+const STORE_ORDERS='orders';const STORE_PASES='pases';
+let db=null;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fmtDate(iso){const d=new Date(iso);return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});}
+function dateKey(iso){const d=new Date(iso);return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;}
+function daysAgo(iso){return Math.floor((Date.now()-new Date(iso).getTime())/(1000*60*60*24));}
+function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+
+function toast(msg,type='info'){
+  const icons={info:'ℹ️',ok:'✅',err:'❌'};
+  const w=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className=`toast${type==='err'?' err':type==='ok'?' ok':''}`;
+  el.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  w.appendChild(el);setTimeout(()=>el.remove(),3200);
+}
+
+function startClock(){
+  const cl=document.getElementById('clock');const db2=document.getElementById('dateBadge');
+  const tick=()=>{const n=new Date();cl.textContent=n.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});db2.textContent=n.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',weekday:'short'}).replace(',','');};
+  tick();setInterval(tick,30000);
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');
+}
+
+/* ── IndexedDB ── */
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE_ORDERS)){const s=d.createObjectStore(STORE_ORDERS,{keyPath:'id'});s.createIndex('fecha','fecha');}
+      if(!d.objectStoreNames.contains(STORE_PASES)){const s=d.createObjectStore(STORE_PASES,{keyPath:'id'});s.createIndex('fecha','fecha');}
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db)};req.onerror=e=>rej(e.target.error);
+  });
+}
+function dbGet(store,mode='readonly'){return db.transaction(store,mode).objectStore(store);}
+function dbAll(store){return new Promise((res,rej)=>{const r=dbGet(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function dbAdd(store,item){return new Promise((res,rej)=>{const r=dbGet(store,'readwrite').add(item);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});}
+function dbDel(store,id){return new Promise((res,rej)=>{const r=dbGet(store,'readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});}
+function dbClear(store){return new Promise((res,rej)=>{const r=dbGet(store,'readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});}
+
+async function purgOld(){
+  const now=Date.now();const limit=5*24*60*60*1000;
+  for(const o of await dbAll(STORE_ORDERS)){if(now-new Date(o.fecha).getTime()>limit)await dbDel(STORE_ORDERS,o.id)}
+  for(const p of await dbAll(STORE_PASES)){if(now-new Date(p.fecha).getTime()>limit)await dbDel(STORE_PASES,p.id)}
+}
+
+/* ── Modal ── */
+function openModalWith(src, caption, filename) {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('modalCaption').textContent = caption || '';
+  const dl = document.getElementById('modalDownload');
+  dl.href = src; dl.download = filename || 'foto.jpg';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e){if(!e||e.target===document.getElementById('modalOverlay')||e.target===document.querySelector('.modal-close'))document.getElementById('modalOverlay').classList.remove('open');}
+
+/* ── Pase de Turno ── */
+const turnoPhotos={tph:null,rating:null,stock:null,califs:null};
+
+function handleTurnoPhoto(key,event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{turnoPhotos[key]=e.target.result;renderTurnoPhotoPreview(key);};
+  reader.readAsDataURL(file);
+}
+
+function renderTurnoPhotoPreview(key){
+  const wrap=document.getElementById('prev-'+key);if(!wrap)return;
+  if(!turnoPhotos[key]){wrap.innerHTML='';return}
+  const labels={tph:'TPH',rating:'Rating',stock:'Stock',califs:'Califs'};
+  wrap.innerHTML=`
+    <div>
+      <div class="thumb-preview" onclick="openModalWith('${turnoPhotos[key]}','${labels[key]}','${key}.jpg')">
+        <img src="${turnoPhotos[key]}" alt=""/>
+        <button class="thumb-remove" onclick="event.stopPropagation();removeTurnoPhoto('${key}')">✕</button>
+      </div>
+      <div style="display:flex;gap:.3rem;margin-top:.3rem">
+        <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .5rem" onclick="openModalWith('${turnoPhotos[key]}','${labels[key]}','${key}.jpg')">🔍 Ver</button>
+        <a class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .5rem" href="${turnoPhotos[key]}" download="${key}.jpg">⬇</a>
+      </div>
+    </div>`;
+}
+
+function removeTurnoPhoto(key){turnoPhotos[key]=null;renderTurnoPhotoPreview(key);}
+
+async function savePase(){
+  const turno=document.getElementById('t-turno').value;
+  const resp=document.getElementById('t-resp').value.trim();
+  if(!turno||!resp){toast('Completá Turno y Responsable','err');return}
+  if(!turnoPhotos.tph){toast('La foto TPH es obligatoria','err');return}
+  if(!turnoPhotos.stock){toast('La foto de Stock es obligatoria','err');return}
+  const pase={id:uid(),fecha:new Date().toISOString(),turno,responsable:resp,notas:document.getElementById('t-notas').value.trim(),photos:{tph:turnoPhotos.tph,rating:turnoPhotos.rating,stock:turnoPhotos.stock,califs:turnoPhotos.califs}};
+  await dbAdd(STORE_PASES,pase);await renderPaseHistory();clearTurnoForm();
+  toast(`Pase de ${turno} guardado (${resp})`,'ok');
+}
+
+function clearTurnoForm(){
+  document.getElementById('t-turno').value='';document.getElementById('t-resp').value='';document.getElementById('t-notas').value='';
+  ['tph','rating','stock','califs'].forEach(k=>{turnoPhotos[k]=null;renderTurnoPhotoPreview(k);});
+}
+async function clearAllPases(){if(!confirm('¿Borrar TODOS los pases?'))return;await dbClear(STORE_PASES);await renderPaseHistory();toast('Pases borrados');}
+
+let selectedPaseDay=null;
+async function renderPaseHistory(){
+  const all=(await dbAll(STORE_PASES)).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  const tabsEl=document.getElementById('paseDayTabs');const histEl=document.getElementById('paseHistory');
+  if(!all.length){tabsEl.innerHTML='';histEl.innerHTML=`<div class="empty"><div class="ei">📭</div><div class="et">Sin pases guardados</div></div>`;return;}
+  const days=[...new Set(all.map(p=>dateKey(p.fecha)))];const todayKey=dateKey(new Date().toISOString());
+  if(!selectedPaseDay||!days.includes(selectedPaseDay))selectedPaseDay=days[0];
+  tabsEl.innerHTML=days.map(d=>`<button class="day-tab${d===selectedPaseDay?' active':''}${d===todayKey?' today-marker':''}" onclick="selectPaseDay('${d}')">${d}${d===todayKey?' ·hoy':''}</button>`).join('');
+  const filtered=all.filter(p=>dateKey(p.fecha)===selectedPaseDay);
+  if(!filtered.length){histEl.innerHTML=`<div class="empty"><div class="et">Sin pases este día</div></div>`;return}
+  const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
+  const photoLabels={tph:'TPH',rating:'Rating',stock:'Stock',califs:'Califs'};
+  histEl.innerHTML=filtered.map(p=>{
+    const thumbs=Object.entries(p.photos||{}).filter(([,v])=>v).map(([k,v])=>`
+      <div>
+        <div class="hi-thumb" onclick="openModalWith('${v}','${photoLabels[k]} — ${escHtml(p.responsable)}','${k}.jpg')">
+          <img src="${v}" loading="lazy"/>
+        </div>
+        <div class="hi-thumb-label">${photoLabels[k]}</div>
+        <a style="font-size:.58rem;color:var(--muted);display:block;text-align:center;margin-top:.1rem" href="${v}" download="${k}.jpg">⬇</a>
+      </div>`).join('');
+    return `<div class="history-item">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;flex-shrink:0">
+        <span class="hi-badge ${badgeCls[p.turno]||'badge-aper'}">${p.turno}</span>
+        <button class="btn btn-red btn-sm" onclick="deletePase('${p.id}')">🗑</button>
+      </div>
+      <div class="hi-meta">
+        <div class="hi-resp">👤 ${escHtml(p.responsable)}</div>
+        ${p.notas?`<div class="hi-note">📝 ${escHtml(p.notas)}</div>`:''}
+        <div class="hi-photos">${thumbs||'<span class="text-sm text-muted">Sin fotos</span>'}</div>
+        <div class="hi-date mt1">🕓 ${fmtDate(p.fecha)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function selectPaseDay(d){selectedPaseDay=d;renderPaseHistory()}
+async function deletePase(id){await dbDel(STORE_PASES,id);await renderPaseHistory();toast('Pase eliminado');}
+
+/* ── Pedidos ── */
+let pendingOrders=[];
+
+function handleMultiUpload(event){
+  const files=Array.from(event.target.files);if(!files.length)return;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const idx=pendingOrders.length;
+      pendingOrders.push({imgDataUrl:e.target.result,orderNumber:'',hint:'',hintColor:'var(--muted)'});
+      renderMultiPreviews();
+      autoDetectNumber(idx);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderMultiPreviews(){
+  const wrap=document.getElementById('multiPreviewWrap');const list=document.getElementById('multiPreviewList');
+  if(!pendingOrders.length){wrap.style.display='none';document.getElementById('saveOrderBtn').disabled=true;return;}
+  wrap.style.display='block';document.getElementById('saveOrderBtn').disabled=false;
+  list.innerHTML=pendingOrders.map((item,i)=>`
+    <div style="display:flex;align-items:center;gap:.75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:.65rem .9rem" id="pending-row-${i}">
+      <div style="width:60px;height:60px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer" onclick="openModalWith('${item.imgDataUrl}','Foto ${i+1}','pedido-${i+1}.jpg')">
+        <img src="${item.imgDataUrl}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">N.° de Pedido</div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input type="text" class="fc" inputmode="numeric" pattern="[0-9]*" placeholder="Desconocido"
+            id="order-num-${i}" value="${escHtml(item.orderNumber)}"
+            oninput="pendingOrders[${i}].orderNumber=this.value"
+            style="padding:.45rem .7rem;font-size:.95rem"/>
+          <button class="btn btn-ghost btn-sm" onclick="autoDetectNumber(${i})" title="Reintentar OCR" style="flex-shrink:0">🔄</button>
+        </div>
+        <div style="font-size:.68rem;margin-top:.2rem;min-height:1em;color:${item.hintColor||'var(--muted)'}">
+          ${item.hint||''}
+        </div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="removePending(${i})" style="flex-shrink:0">🗑</button>
+    </div>`).join('');
+}
+
+function removePending(i){pendingOrders.splice(i,1);renderMultiPreviews();}
+function resetOrderForm(){pendingOrders=[];document.getElementById('ticketInput').value='';document.getElementById('order-turno').value='';document.getElementById('order-resp').value='';renderMultiPreviews();}
+
+/* ── Tabla de pedidos con selección múltiple ── */
+let selectedIds=new Set();
+let selectedOrderDay=null;
+
+async function renderOrdersTable(){
+  const all=(await dbAll(STORE_ORDERS)).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  const query=(document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  const filterTurno=(document.getElementById('filterTurno')||{value:''}).value;
+  const filterResp=(document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
+  const tabsEl=document.getElementById('orderDayTabs');const tbody=document.getElementById('ordersTableBody');
+  const emptyEl=document.getElementById('ordersEmpty');const countEl=document.getElementById('ordersCount');
+
+  if(!all.length){tabsEl.innerHTML='';tbody.innerHTML='';emptyEl.style.display='block';countEl.innerHTML='';updateBulkBar();return;}
+  const days=[...new Set(all.map(o=>dateKey(o.fecha)))];const todayKey=dateKey(new Date().toISOString());
+  if(!selectedOrderDay||!days.includes(selectedOrderDay))selectedOrderDay=days[0];
+  tabsEl.innerHTML=days.map(d=>`<button class="day-tab${d===selectedOrderDay?' active':''}${d===todayKey?' today-marker':''}" onclick="selectOrderDay('${d}')">${d}${d===todayKey?' ·hoy':''}</button>`).join('');
+
+  let items=all.filter(o=>dateKey(o.fecha)===selectedOrderDay);
+  if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
+  if(filterResp)items=items.filter(o=>(o.responsable||'').toLowerCase().includes(filterResp));
+  if(query)items=items.filter(o=>o.orderNumber.toLowerCase().includes(query));
+
+  countEl.innerHTML=items.length?`<strong>${items.length}</strong> pedido${items.length!==1?'s':''} el ${selectedOrderDay}`:'';
+  if(!items.length){tbody.innerHTML='';emptyEl.style.display='block';updateBulkBar();return;}
+  emptyEl.style.display='none';
+
+  const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
+  function hl(text,q){if(!q)return escHtml(text);return escHtml(text).replace(new RegExp(`(${escHtml(q)})`, 'gi'),'<mark class="highlight">$1</mark>');}
+  function expiryBadge(iso){const d=daysAgo(iso);if(d<=2)return`<span class="expiry-badge exp-ok">Vigente (${5-d}d)</span>`;if(d<=4)return`<span class="expiry-badge exp-soon">Expira pronto</span>`;return`<span class="expiry-badge exp-old">Expira hoy</span>`;}
+
+  tbody.innerHTML=items.map(o=>`
+    <tr class="${selectedIds.has(o.id)?'selected-row':''}">
+      <td><input type="checkbox" class="row-check" ${selectedIds.has(o.id)?'checked':''} onchange="toggleRow('${o.id}',this)"/></td>
+      <td><div class="tbl-thumb" onclick="openOrderModal('${o.id}')"><img src="${o.imageDataUrl}" loading="lazy" alt=""/></div></td>
+      <td><span class="order-num">#${hl(o.orderNumber||'desconocido',query)}</span></td>
+      <td><span class="hi-badge ${badgeCls[o.turno]||'badge-aper'}">${o.turno||'—'}</span></td>
+      <td><span style="font-size:.82rem">${escHtml(o.responsable||'—')}</span></td>
+      <td><span class="order-date">${fmtDate(o.fecha)}</span></td>
+      <td>${expiryBadge(o.fecha)}</td>
+      <td class="td-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openOrderModal('${o.id}')">🔍</button>
+        <a class="btn btn-ghost btn-sm" href="${o.imageDataUrl}" download="pedido-${escHtml(o.orderNumber||'desconocido')}.jpg">⬇</a>
+        <button class="btn btn-red btn-sm" onclick="confirmDelOrder('${o.id}','${escHtml(o.orderNumber||'desconocido')}')">🗑</button>
+      </td>
+    </tr>`).join('');
+  updateBulkBar();
+}
+
+function toggleRow(id,cb){if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);updateBulkBar();const row=cb.closest('tr');if(row)row.classList.toggle('selected-row',cb.checked);}
+function toggleAll(cb){const checks=document.querySelectorAll('#ordersTableBody .row-check');checks.forEach(c=>{c.checked=cb.checked;const id=c.closest('tr').querySelector('[onclick*="openOrderModal"]')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];if(id){if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);c.closest('tr').classList.toggle('selected-row',cb.checked);}});updateBulkBar();}
+function clearSelection(){selectedIds.clear();document.querySelectorAll('.row-check').forEach(c=>c.checked=false);document.querySelectorAll('.selected-row').forEach(r=>r.classList.remove('selected-row'));const ca=document.getElementById('checkAll');if(ca)ca.checked=false;updateBulkBar();}
+function updateBulkBar(){const bar=document.getElementById('bulkBar');const label=document.getElementById('bulkLabel');if(selectedIds.size>0){bar.classList.add('visible');label.textContent=`${selectedIds.size} pedido${selectedIds.size!==1?'s':''} seleccionado${selectedIds.size!==1?'s':''}`;}else{bar.classList.remove('visible');}}
+
+async function deleteSelected(){
+  if(!selectedIds.size)return;
+  if(!confirm(`¿Eliminar ${selectedIds.size} pedido${selectedIds.size!==1?'s':''}?`))return;
+  for(const id of selectedIds)await dbDel(STORE_ORDERS,id);
+  const n=selectedIds.size;selectedIds.clear();
+  await renderOrdersTable();toast(`${n} pedido${n!==1?'s':''} eliminado${n!==1?'s':''}`, 'ok');
+}
+
+function selectOrderDay(d){selectedOrderDay=d;clearSelection();renderOrdersTable();}
+async function confirmDelOrder(id,num){if(!confirm(`¿Eliminar pedido #${num}?`))return;await dbDel(STORE_ORDERS,id);selectedIds.delete(id);await renderOrdersTable();toast(`Pedido #${num} eliminado`);}
+async function clearAllOrders(){if(!confirm('¿Borrar TODOS los pedidos?'))return;await dbClear(STORE_ORDERS);selectedIds.clear();await renderOrdersTable();toast('Pedidos borrados');}
+
+async function openOrderModal(orderId){
+  const all=await dbAll(STORE_ORDERS);const o=all.find(x=>x.id===orderId);if(!o)return;
+  openModalWith(o.imageDataUrl,`Pedido #${o.orderNumber||'desconocido'} — ${fmtDate(o.fecha)}`,`pedido-${o.orderNumber||'desconocido'}.jpg`);
+}
+
+/* ── OCR ── */
+function resizeImageForOCR(dataUrl,maxDim){
+  maxDim=maxDim||1600;
+  return new Promise(function(resolve){
+    var img=new Image();
+    img.onload=function(){
+      var scale=Math.min(1,maxDim/Math.max(img.width,img.height));
+      var w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg',0.95));
+    };
+    img.src=dataUrl;
+  });
+}
+
+async function autoDetectNumber(i){
+  var item=pendingOrders[i];if(!item)return;
+  pendingOrders[i].hint='⏳ Analizando imagen…';pendingOrders[i].hintColor='var(--muted)';
+  renderMultiPreviews();
+  var inputEl=document.getElementById('order-num-'+i);if(inputEl)inputEl.disabled=true;
+  try{
+    var resized=await resizeImageForOCR(item.imgDataUrl,1600);
+    var base64=resized.split(',')[1];
+    var formData=new FormData();
+    formData.append('base64Image','data:image/jpeg;base64,'+base64);
+    formData.append('apikey','K81160960288957');
+    formData.append('language','spa');
+    formData.append('isOverlayRequired','false');
+    formData.append('detectOrientation','true');
+    formData.append('scale','true');
+    formData.append('OCREngine','2');
+    var response=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
+    var data=await response.json();
+    var text='';
+    if(data.ParsedResults&&data.ParsedResults.length>0){text=data.ParsedResults[0].ParsedText||'';}
+    else if(data.ErrorMessage){throw new Error(data.ErrorMessage);}
+    console.log('[OCR.space] texto:',text);
+    var found=extractBestNumber(text);
+    if(found){
+      pendingOrders[i].orderNumber=found;
+      pendingOrders[i].hint='✅ #'+found+' detectado';
+      pendingOrders[i].hintColor='var(--green)';
+    }else{
+      pendingOrders[i].hint='⚠️ No detectado — ingresá el número manualmente';
+      pendingOrders[i].hintColor='var(--orange)';
+    }
+  }catch(err){
+    console.error('[OCR] Error:',err);
+    pendingOrders[i].hint='❌ '+err.message;
+    pendingOrders[i].hintColor='var(--red)';
+  }finally{
+    renderMultiPreviews();
+    var el=document.getElementById('order-num-'+i);if(el)el.disabled=false;
+  }
+}
+
+function extractBestNumber(text){
+  if(!text||text.trim()==='NOTFOUND')return null;
+  var mPickup=text.match(/pick\s*up[^\d]*(\d{4,12})/i);if(mPickup)return mPickup[1];
+  var mPedido=text.match(/(?:pedido|n[°o]|#)[^\d]*(\d{4,12})/i);if(mPedido)return mPedido[1];
+  var nums=(text.match(/\b\d{5,12}\b/g)||[]).filter(function(n){return!/^20\d{2}$/.test(n);});
+  if(nums.length)return nums[0];
+  var nums2=text.match(/\b\d{4,12}\b/g);if(nums2&&nums2.length)return nums2[0];
+  return null;
+}
+
+async function saveAllOrders(){
+  const turno=document.getElementById('order-turno').value;
+  const resp=document.getElementById('order-resp').value.trim();
+  if(!turno||!resp){toast('Completá Turno y Responsable','err');return}
+  if(!pendingOrders.length){toast('No hay fotos cargadas','err');return}
+  let saved=0;
+  for(const item of pendingOrders){
+    const num=(item.orderNumber||'').trim()||'desconocido';
+    const order={id:uid(),fecha:new Date().toISOString(),orderNumber:num,imageDataUrl:item.imgDataUrl,turno,responsable:resp};
+    await dbAdd(STORE_ORDERS,order);saved++;
+  }
+  await renderOrdersTable();resetOrderForm();
+  toast(`${saved} pedido${saved!==1?'s':''} guardado${saved!==1?'s':''}`, 'ok');
+}
+
+const uz=document.getElementById('uploadZone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover')});
+uz.addEventListener('dragleave',()=>uz.classList.remove('dragover'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dragover');const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)handleMultiUpload({target:{files}});});
+
+(async()=>{
+  startClock();await initDB();await purgOld();
+  await renderPaseHistory();await renderOrdersTable();
+  console.log('✅ McDash v3 listo');
+})();
+</script>
+</body>
+</html>
