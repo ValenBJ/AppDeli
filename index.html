@@ -665,7 +665,17 @@ function renderOrdersTable(){
     <tr class="${selectedIds.has(o.id)?'selected-row':''}">
       <td><input type="checkbox" class="row-check" ${selectedIds.has(o.id)?'checked':''} onchange="toggleRow('${o.id}',this)"/></td>
       <td><div class="tbl-thumb" onclick="openOrderModal('${o.id}')"><img src="${o.imageDataUrl}" loading="lazy" alt=""/></div></td>
-      <td><span class="order-num">#${hl(o.orderNumber||'desconocido',query2)}</span></td>
+      <td>
+        <div id="num-display-${o.id}" style="display:flex;align-items:center;gap:.3rem">
+          <span class="order-num">#${hl(o.orderNumber||'desconocido',query2)}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:.18rem .38rem;font-size:.68rem" onclick="startEditNum('${o.id}','${escHtml(o.orderNumber||'')}')">✏️</button>
+        </div>
+        <div id="num-edit-${o.id}" style="display:none;gap:.28rem;align-items:center">
+          <input type="text" class="fc" inputmode="numeric" id="num-input-${o.id}" value="${escHtml(o.orderNumber||'')}" style="padding:.3rem .5rem;font-size:.88rem;width:100px" onkeydown="if(event.key==='Enter')saveEditNum('${o.id}');if(event.key==='Escape')cancelEditNum('${o.id}')"/>
+          <button class="btn btn-primary btn-sm" onclick="saveEditNum('${o.id}')">✓</button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelEditNum('${o.id}')">✕</button>
+        </div>
+      </td>
       <td><span class="hi-badge ${badgeCls[o.turno]||'badge-aper'}">${o.turno||'—'}</span></td>
       <td><span style="font-size:.8rem">${escHtml(o.responsable||'—')}</span></td>
       <td><span class="order-date">${fmtDate(o.fecha)}</span></td>
@@ -822,6 +832,41 @@ const uz=document.getElementById('uploadZone');
 uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover')});
 uz.addEventListener('dragleave',()=>uz.classList.remove('dragover'));
 uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dragover');const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)handleMultiUpload({target:{files}});});
+
+/* ══ EDIT ORDER NUMBER ══ */
+window.startEditNum = function(id, current) {
+  const display = document.getElementById('num-display-'+id);
+  const editDiv = document.getElementById('num-edit-'+id);
+  if(!display||!editDiv) return;
+  display.style.display = 'none';
+  editDiv.style.display = 'flex';
+  const input = document.getElementById('num-input-'+id);
+  if(input){ input.value = current; input.focus(); input.select(); }
+};
+
+window.cancelEditNum = function(id) {
+  const display = document.getElementById('num-display-'+id);
+  const editDiv = document.getElementById('num-edit-'+id);
+  if(display) display.style.display = 'flex';
+  if(editDiv) editDiv.style.display = 'none';
+};
+
+window.saveEditNum = async function(id) {
+  const input = document.getElementById('num-input-'+id);
+  if(!input) return;
+  const newNum = input.value.trim() || 'desconocido';
+  setSyncDot('syncing');
+  try {
+    const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await updateDoc(doc(db,'orders',id), { orderNumber: newNum });
+    setSyncDot('ok');
+    toast('Pedido actualizado a #'+newNum, 'ok');
+  } catch(e) {
+    setSyncDot('err');
+    toast('Error: '+e.message, 'err');
+    window.cancelEditNum(id);
+  }
+};
 
 /* ══ EXPORT PDF ══ */
 window.exportPDF = function(){
