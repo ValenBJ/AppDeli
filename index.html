@@ -188,6 +188,14 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 .modal-caption{margin-top:.6rem;font-family:var(--font-display);font-size:.9rem;color:var(--muted);letter-spacing:.05em;text-align:center}
 .modal-download{margin-top:.5rem;display:flex;justify-content:center}
 
+/* ── MODAL NAVIGATION ── */
+.modal-nav{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-bottom:.6rem}
+.modal-nav-btn{background:var(--surface3);border:1px solid var(--border2);border-radius:50%;width:36px;height:36px;color:var(--text);font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:all var(--t);flex-shrink:0}
+.modal-nav-btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}
+.modal-nav-btn:disabled{opacity:.25;cursor:not-allowed}
+.modal-nav-btn:disabled:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.modal-nav-counter{font-family:var(--font-display);font-size:.85rem;color:var(--muted);letter-spacing:.08em;min-width:60px;text-align:center}
+
 /* ── LOADING / SKELETON ── */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:grid;place-items:center;flex-direction:column;gap:1rem}
 .loading-overlay.hidden{display:none}
@@ -222,6 +230,32 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 .mt1{margin-top:.35rem}.mt2{margin-top:.65rem}
 .text-sm{font-size:.78rem}.text-muted{color:var(--muted)}
 .gap2{gap:.5rem}.flex{display:flex}.items-center{align-items:center}
+
+/* ── VIEW TOGGLE ── */
+.view-toggle{display:flex;gap:.3rem;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:.2rem;}
+.vt-btn{background:none;border:none;border-radius:6px;padding:.28rem .55rem;color:var(--muted);cursor:pointer;font-size:.85rem;transition:all var(--t);line-height:1;}
+.vt-btn.active{background:var(--gold);color:#000;}
+.vt-btn:not(.active):hover{background:var(--surface3);color:var(--text)}
+
+/* ── GALLERY VIEW ── */
+.orders-gallery{display:none;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.7rem;margin-top:.3rem}
+.orders-gallery.visible{display:grid}
+@media(min-width:480px){.orders-gallery{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}}
+
+.gallery-card{background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-md);overflow:hidden;cursor:pointer;transition:border-color var(--t),transform var(--t),box-shadow var(--t);position:relative;}
+.gallery-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.gallery-card.gc-selected{border-color:var(--gold);background:rgba(255,184,0,.07)}
+.gc-img-wrap{position:relative;width:100%;padding-top:100%;overflow:hidden;}
+.gc-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gc-check{position:absolute;top:.4rem;left:.4rem;z-index:2;}
+.gc-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;}
+.gc-expiry{position:absolute;top:.4rem;right:.4rem;z-index:2;}
+.gc-body{padding:.5rem .55rem .55rem;}
+.gc-num{font-family:var(--font-display);font-size:1rem;color:var(--gold);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gc-meta{display:flex;align-items:center;justify-content:space-between;margin-top:.28rem;gap:.3rem;flex-wrap:wrap}
+.gc-resp{font-size:.65rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;}
+.gc-actions{display:flex;gap:.22rem;margin-top:.4rem;}
+.gc-actions .btn{padding:.22rem .42rem;font-size:.65rem;}
 </style>
 </head>
 <body>
@@ -351,7 +385,12 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
   </div>
 
   <div class="card">
-    <div class="card-title"><span>🔍 Pedidos Registrados</span><div style="display:flex;gap:.4rem"><button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
+    <div class="card-title"><span>🔍 Pedidos Registrados</span><div style="display:flex;gap:.4rem;align-items:center">
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-table" onclick="setOrderView('table')" title="Vista tabla">☰</button>
+        <button class="vt-btn" id="vt-gallery" onclick="setOrderView('gallery')" title="Vista galería">▦</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
     <div class="day-tabs" id="orderDayTabs"></div>
     <div class="fgrid" style="margin-bottom:.75rem;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       <div class="fgroup"><label>Turno</label><select id="filterTurno" class="fc" onchange="renderOrdersTable()"><option value="">Todos</option><option value="Aper">Apertura</option><option value="Medio">Medio</option><option value="Cierre">Cierre</option></select></div>
@@ -377,6 +416,8 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
         <p class="text-sm">Subí fotos de tickets para comenzar.</p>
       </div>
     </div>
+    <!-- GALLERY VIEW -->
+    <div class="orders-gallery" id="ordersGallery"></div>
   </div>
 </section>
 </main>
@@ -386,6 +427,11 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-nav" id="modalNav" style="display:none">
+      <button class="modal-nav-btn" id="modalPrev" onclick="navigateModal(-1)" title="Anterior">&#8592;</button>
+      <span class="modal-nav-counter" id="modalCounter"></span>
+      <button class="modal-nav-btn" id="modalNext" onclick="navigateModal(1)" title="Siguiente">&#8594;</button>
+    </div>
     <img id="modalImg" class="modal-img" src="" alt=""/>
     <div class="modal-caption" id="modalCaption"></div>
     <div class="modal-download"><a id="modalDownload" class="btn btn-ghost btn-sm" download="foto.jpg" href="#">⬇ Descargar foto</a></div>
@@ -445,14 +491,73 @@ function switchTab(id,btn){
 window.switchTab=switchTab;
 
 /* ══ MODAL ══ */
-function openModalWith(src,caption,filename){
-  document.getElementById('modalImg').src=src;
-  document.getElementById('modalCaption').textContent=caption||'';
-  const dl=document.getElementById('modalDownload');dl.href=src;dl.download=filename||'foto.jpg';
+let modalQueue = []; // [{src, caption, filename}]
+let modalIndex = 0;
+
+function _applyModal(idx){
+  const item = modalQueue[idx];
+  if(!item) return;
+  const img = document.getElementById('modalImg');
+  img.style.opacity = '0';
+  img.src = item.src;
+  img.onload = () => { img.style.transition = 'opacity .15s'; img.style.opacity = '1'; };
+  document.getElementById('modalCaption').textContent = item.caption || '';
+  const dl = document.getElementById('modalDownload'); dl.href = item.src; dl.download = item.filename || 'foto.jpg';
+  const nav = document.getElementById('modalNav');
+  const counter = document.getElementById('modalCounter');
+  const prev = document.getElementById('modalPrev');
+  const next = document.getElementById('modalNext');
+  if(modalQueue.length > 1){
+    nav.style.display = 'flex';
+    counter.textContent = `${idx+1} / ${modalQueue.length}`;
+    prev.disabled = idx === 0;
+    next.disabled = idx === modalQueue.length - 1;
+  } else {
+    nav.style.display = 'none';
+  }
+}
+
+function openModalWith(src, caption, filename){
+  modalQueue = [{src, caption, filename}];
+  modalIndex = 0;
+  _applyModal(0);
   document.getElementById('modalOverlay').classList.add('open');
 }
-function closeModal(e){if(!e||e.target===document.getElementById('modalOverlay'))document.getElementById('modalOverlay').classList.remove('open');}
-window.closeModal=closeModal;
+
+function openOrderModal(orderId){
+  // Build queue from currently visible/filtered orders
+  const query2 = (document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  const filterTurno = (document.getElementById('filterTurno')||{value:''}).value;
+  const filterResp = (document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
+  let items = [...allOrders].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  if(selectedOrderDay) items = items.filter(o => dateKey(o.fecha) === selectedOrderDay);
+  if(filterTurno) items = items.filter(o => o.turno === filterTurno);
+  if(filterResp) items = items.filter(o => (o.responsable||'').toLowerCase().includes(filterResp));
+  if(query2) items = items.filter(o => o.orderNumber.toLowerCase().includes(query2));
+  modalQueue = items.map(o => ({
+    src: o.imageDataUrl,
+    caption: `Pedido #${o.orderNumber||'desconocido'} — ${fmtDate(o.fecha)}`,
+    filename: `pedido-${o.orderNumber||'desconocido'}.jpg`
+  }));
+  modalIndex = items.findIndex(o => o.id === orderId);
+  if(modalIndex < 0) modalIndex = 0;
+  _applyModal(modalIndex);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+window.navigateModal = function(dir){
+  const newIdx = modalIndex + dir;
+  if(newIdx < 0 || newIdx >= modalQueue.length) return;
+  modalIndex = newIdx;
+  _applyModal(modalIndex);
+};
+
+function closeModal(e){
+  if(!e || e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+window.closeModal = closeModal;
+window.openOrderModal = openOrderModal;
 
 /* ══ IMAGE COMPRESS ══ */
 function compressImage(dataUrl, maxDim=1200, quality=0.82){
@@ -654,7 +759,7 @@ window.renderOrdersTable = function renderOrdersTable(){
   if(query2)items=items.filter(o=>o.orderNumber.toLowerCase().includes(query2));
 
   countEl.innerHTML=items.length?`<strong>${items.length}</strong> pedido${items.length!==1?'s':''} el ${selectedOrderDay}`:'';
-  if(!items.length){tbody.innerHTML='';emptyEl.style.display='block';updateBulkBar();return;}
+  if(!items.length){tbody.innerHTML='';emptyEl.style.display='block';updateBulkBar();renderOrdersGallery([],query2);return;}
   emptyEl.style.display='none';
 
   const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
@@ -687,12 +792,22 @@ window.renderOrdersTable = function renderOrdersTable(){
       </td>
     </tr>`).join('');
   updateBulkBar();
+  renderOrdersGallery(items, query2);
+  const _tw=document.querySelector('.table-wrap');const _gv=document.getElementById('ordersGallery');
+  if(currentOrderView==='gallery'){if(_tw)_tw.style.display='none';if(_gv)_gv.classList.add('visible');}
+  else{if(_tw)_tw.style.display='';if(_gv)_gv.classList.remove('visible');}
 }
-window.selectOrderDay=function(d){selectedOrderDay=d;clearSelection();renderOrdersTable();};
+window.selectOrderDay=function(d){selectedOrderDay=d;clearSelection();renderOrdersTable()};
 
 window.toggleRow=function(id,cb){
   if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);
-  updateBulkBar();cb.closest('tr').classList.toggle('selected-row',cb.checked);
+  updateBulkBar();
+  // update table row if visible
+  const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected-row',cb.checked);
+  // update gallery card if visible
+  const gc=document.getElementById('gc-'+id);if(gc)gc.classList.toggle('gc-selected',cb.checked);
+  // sync the other checkbox (table <-> gallery)
+  document.querySelectorAll(`input[onchange*="toggleRow('${id}'"]`).forEach(el=>{el.checked=cb.checked;});
 };
 window.toggleAll=function(cb){
   document.querySelectorAll('#ordersTableBody .row-check').forEach(c=>{
@@ -746,11 +861,6 @@ window.clearAllOrders=async function(){
     const batch=writeBatch(db);snap.forEach(d=>batch.delete(d.ref));
     await batch.commit();selectedIds.clear();setSyncDot('ok');toast('Pedidos borrados');
   }catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
-};
-
-window.openOrderModal=function(orderId){
-  const o=allOrders.find(x=>x.id===orderId);if(!o)return;
-  openModalWith(o.imageDataUrl,`Pedido #${o.orderNumber||'desconocido'} — ${fmtDate(o.fecha)}`,`pedido-${o.orderNumber||'desconocido'}.jpg`);
 };
 
 /* ══ OCR ══ */
@@ -835,24 +945,37 @@ uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dragover'
 
 /* ══ EDIT ORDER NUMBER ══ */
 window.startEditNum = function(id, current) {
+  // tabla
   const display = document.getElementById('num-display-'+id);
   const editDiv = document.getElementById('num-edit-'+id);
-  if(!display||!editDiv) return;
-  display.style.display = 'none';
-  editDiv.style.display = 'flex';
+  if(display) display.style.display = 'none';
+  if(editDiv){ editDiv.style.display = 'flex'; }
   const input = document.getElementById('num-input-'+id);
   if(input){ input.value = current; input.focus(); input.select(); }
+  // galería
+  const gcDisplay = document.getElementById('gc-num-display-'+id);
+  const gcEdit = document.getElementById('gc-num-edit-'+id);
+  if(gcDisplay) gcDisplay.style.display = 'none';
+  if(gcEdit){ gcEdit.style.display = 'flex'; }
+  const gcInput = document.getElementById('gc-num-input-'+id);
+  if(gcInput){ gcInput.value = current; gcInput.focus(); gcInput.select(); }
 };
 
 window.cancelEditNum = function(id) {
+  // tabla
   const display = document.getElementById('num-display-'+id);
   const editDiv = document.getElementById('num-edit-'+id);
   if(display) display.style.display = 'flex';
   if(editDiv) editDiv.style.display = 'none';
+  // galería
+  const gcDisplay = document.getElementById('gc-num-display-'+id);
+  const gcEdit = document.getElementById('gc-num-edit-'+id);
+  if(gcDisplay) gcDisplay.style.display = 'flex';
+  if(gcEdit) gcEdit.style.display = 'none';
 };
 
 window.saveEditNum = async function(id) {
-  const input = document.getElementById('num-input-'+id);
+  const input = document.getElementById('num-input-'+id) || document.getElementById('gc-num-input-'+id);
   if(!input) return;
   const newNum = input.value.trim() || 'desconocido';
   setSyncDot('syncing');
@@ -961,6 +1084,66 @@ ${rows}
   toast(`PDF listo — ${items.length} pedido${items.length!==1?'s':''}`, 'ok');
 };
 
+/* ══ ORDER VIEW TOGGLE ══ */
+let currentOrderView = 'table'; // 'table' | 'gallery'
+
+window.setOrderView = function(view) {
+  currentOrderView = view;
+  const tableWrap = document.querySelector('.table-wrap');
+  const gallery = document.getElementById('ordersGallery');
+  const btnTable = document.getElementById('vt-table');
+  const btnGallery = document.getElementById('vt-gallery');
+  if(view === 'gallery'){
+    if(tableWrap) tableWrap.style.display = 'none';
+    if(gallery) gallery.classList.add('visible');
+    if(btnTable) btnTable.classList.remove('active');
+    if(btnGallery) btnGallery.classList.add('active');
+  } else {
+    if(tableWrap) tableWrap.style.display = '';
+    if(gallery) gallery.classList.remove('visible');
+    if(btnTable) btnTable.classList.add('active');
+    if(btnGallery) btnGallery.classList.remove('active');
+  }
+};
+
+function renderOrdersGallery(items, query2){
+  const gallery = document.getElementById('ordersGallery');
+  if(!gallery) return;
+  if(!items.length){ gallery.innerHTML=''; return; }
+  const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
+  function expiryBadge(iso){const d=daysAgo(iso);if(d<=2)return`<span class="expiry-badge exp-ok" style="font-size:.55rem">✔ ${5-d}d</span>`;if(d<=4)return`<span class="expiry-badge exp-soon" style="font-size:.55rem">⚡ pronto</span>`;return`<span class="expiry-badge exp-old" style="font-size:.55rem">❗ hoy</span>`;}
+  gallery.innerHTML = items.map(o=>`
+    <div class="gallery-card${selectedIds.has(o.id)?' gc-selected':''}" id="gc-${o.id}">
+      <div class="gc-img-wrap" onclick="openOrderModal('${o.id}')">
+        <img src="${o.imageDataUrl}" loading="lazy" alt="Pedido #${escHtml(o.orderNumber||'?')}"/>
+        <div class="gc-check" onclick="event.stopPropagation()">
+          <input type="checkbox" class="row-check" ${selectedIds.has(o.id)?'checked':''} onchange="toggleRow('${o.id}',this)"/>
+        </div>
+        <div class="gc-expiry">${expiryBadge(o.fecha)}</div>
+      </div>
+      <div class="gc-body">
+        <div id="gc-num-display-${o.id}" style="display:flex;align-items:center;gap:.3rem;min-width:0">
+          <span class="gc-num">#${escHtml(o.orderNumber||'desconocido')}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:.15rem .3rem;font-size:.65rem;flex-shrink:0" onclick="startEditNum('${o.id}','${escHtml(o.orderNumber||'')}')">✏️</button>
+        </div>
+        <div id="gc-num-edit-${o.id}" style="display:none;gap:.25rem;align-items:center;margin-bottom:.25rem">
+          <input type="text" class="fc" inputmode="numeric" id="gc-num-input-${o.id}" value="${escHtml(o.orderNumber||'')}" style="padding:.28rem .45rem;font-size:.82rem;width:100%" onkeydown="if(event.key==='Enter')saveEditNum('${o.id}');if(event.key==='Escape')cancelEditNum('${o.id}')"/>
+          <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="saveEditNum('${o.id}')">✓</button>
+          <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="cancelEditNum('${o.id}')">✕</button>
+        </div>
+        <div class="gc-meta">
+          <span class="hi-badge ${badgeCls[o.turno]||'badge-aper'}" style="font-size:.6rem;padding:.12rem .4rem">${o.turno||'—'}</span>
+          <span class="gc-resp">👤 ${escHtml(o.responsable||'—')}</span>
+        </div>
+        <div class="gc-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openOrderModal('${o.id}')">🔍</button>
+          <a class="btn btn-ghost btn-sm" href="${o.imageDataUrl}" download="pedido-${escHtml(o.orderNumber||'desconocido')}.jpg">⬇</a>
+          <button class="btn btn-red btn-sm" onclick="confirmDelOrder('${o.id}','${escHtml(o.orderNumber||'?')}')">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
 /* ══ REALTIME LISTENERS ══ */
 function setupListeners(){
   // Pases
@@ -981,6 +1164,16 @@ startClock();
 setSyncDot('syncing');
 setupListeners();
 setTimeout(()=>{document.getElementById('loadingOverlay').classList.add('hidden');},1200);
+
+// Keyboard navigation for modal
+document.addEventListener('keydown', e => {
+  const overlay = document.getElementById('modalOverlay');
+  if(!overlay.classList.contains('open')) return;
+  if(e.key === 'ArrowRight') window.navigateModal(1);
+  else if(e.key === 'ArrowLeft') window.navigateModal(-1);
+  else if(e.key === 'Escape') closeModal();
+});
+
 console.log('✅ McDash v4 — Firebase realtime listo');
 </script>
 </body>
