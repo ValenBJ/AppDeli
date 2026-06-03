@@ -635,7 +635,7 @@ let selectedIds=new Set();
 let selectedOrderDay=null;
 let allOrders=[];
 
-function renderOrdersTable(){
+window.renderOrdersTable = function renderOrdersTable(){
   const query2=(document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
   const filterTurno=(document.getElementById('filterTurno')||{value:''}).value;
   const filterResp=(document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
