@@ -184,7 +184,6 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-xl);padding:1rem;max-width:min(96vw,680px);width:100%;max-height:94vh;overflow:auto;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.7);}
 .modal-close{position:absolute;top:.6rem;right:.6rem;background:var(--surface3);border:none;border-radius:50%;width:30px;height:30px;color:var(--text);font-size:.8rem;cursor:pointer;display:grid;place-items:center;z-index:2;transition:background var(--t);}
 .modal-close:hover{background:var(--red)}
-.modal-img{width:100%;max-height:75vh;object-fit:contain;border-radius:var(--r-md);display:block;margin:0 auto}
 .modal-caption{margin-top:.6rem;font-family:var(--font-display);font-size:.9rem;color:var(--muted);letter-spacing:.05em;text-align:center}
 .modal-download{margin-top:.5rem;display:flex;justify-content:center}
 
@@ -196,7 +195,44 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 .modal-nav-btn:disabled:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .modal-nav-counter{font-family:var(--font-display);font-size:.85rem;color:var(--muted);letter-spacing:.08em;min-width:60px;text-align:center}
 
-/* ── LOADING / SKELETON ── */
+/* ── MODAL PINCH/ZOOM ── */
+.modal-img{width:100%;max-height:75vh;object-fit:contain;border-radius:var(--r-md);display:block;margin:0 auto;touch-action:none;cursor:grab;transition:transform .15s ease;transform-origin:center center;will-change:transform}
+.modal-img.dragging{cursor:grabbing;transition:none}
+.modal-img.zoomed{cursor:move}
+
+/* ── GALLERY CARD ANIMATION ── */
+@keyframes gcFadeIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.gallery-card{animation:gcFadeIn .28s ease both}
+
+/* ── TOUCH SELECT MODE ── */
+.touch-select-mode .gallery-card{cursor:pointer}
+.touch-select-mode .gallery-card .gc-img-wrap{pointer-events:none}
+.gc-select-hint{display:none;position:fixed;bottom:calc(5rem + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--gold);color:var(--gold);font-size:.78rem;padding:.4rem .9rem;border-radius:2rem;z-index:50;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.5);pointer-events:none;animation:slideIn .25s ease}
+.gc-select-hint.visible{display:block}
+/* stagger animation per card */
+.gallery-card:nth-child(1){animation-delay:.03s}
+.gallery-card:nth-child(2){animation-delay:.06s}
+.gallery-card:nth-child(3){animation-delay:.09s}
+.gallery-card:nth-child(4){animation-delay:.12s}
+.gallery-card:nth-child(5){animation-delay:.15s}
+.gallery-card:nth-child(6){animation-delay:.18s}
+.gallery-card:nth-child(7){animation-delay:.21s}
+.gallery-card:nth-child(8){animation-delay:.24s}
+.gallery-card:nth-child(9){animation-delay:.27s}
+.gallery-card:nth-child(10){animation-delay:.3s}
+.gallery-card:nth-child(n+11){animation-delay:.3s}
+
+/* ── NEW CARD FLASH ── */
+@keyframes gcFlashNew{0%{box-shadow:0 0 0 0 rgba(255,184,0,.9);border-color:var(--gold);transform:scale(1.04)}50%{box-shadow:0 0 0 10px rgba(255,184,0,0);border-color:var(--gold)}100%{box-shadow:none;transform:scale(1)}}
+.gallery-card.gc-new{animation:gcFlashNew .7s ease forwards!important;border-color:var(--gold)!important}
+
+/* ── GLOBAL SEARCH ── */
+.global-search-wrap{position:relative;margin-bottom:.6rem}
+.global-search-wrap .gs-icon{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none}
+.global-search-wrap input{padding-left:2.2rem;padding-right:2rem}
+.gs-clear{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:.1rem;line-height:1;display:none}
+.gs-clear.visible{display:block}
+.gs-results-note{font-size:.72rem;color:var(--gold);text-align:center;margin-bottom:.4rem;letter-spacing:.04em}
 .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:grid;place-items:center;flex-direction:column;gap:1rem}
 .loading-overlay.hidden{display:none}
 .spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
@@ -387,15 +423,20 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
   <div class="card">
     <div class="card-title"><span>🔍 Pedidos Registrados</span><div style="display:flex;gap:.4rem;align-items:center">
       <div class="view-toggle">
-        <button class="vt-btn active" id="vt-table" onclick="setOrderView('table')" title="Vista tabla">☰</button>
-        <button class="vt-btn" id="vt-gallery" onclick="setOrderView('gallery')" title="Vista galería">▦</button>
+        <button class="vt-btn" id="vt-table" onclick="setOrderView('table')" title="Vista tabla">☰</button>
+        <button class="vt-btn active" id="vt-gallery" onclick="setOrderView('gallery')" title="Vista galería">▦</button>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
+    <div class="global-search-wrap">
+      <span class="gs-icon">🔍</span>
+      <input type="text" id="globalSearch" class="fc" placeholder="Buscar en todos los días…" oninput="onGlobalSearch(this.value)" autocomplete="off"/>
+      <button class="gs-clear" id="gsClear" onclick="clearGlobalSearch()">✕</button>
+    </div>
+    <div class="gs-results-note" id="gsNote" style="display:none"></div>
     <div class="day-tabs" id="orderDayTabs"></div>
     <div class="fgrid" style="margin-bottom:.75rem;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       <div class="fgroup"><label>Turno</label><select id="filterTurno" class="fc" onchange="renderOrdersTable()"><option value="">Todos</option><option value="Aper">Apertura</option><option value="Medio">Medio</option><option value="Cierre">Cierre</option></select></div>
       <div class="fgroup"><label>Responsable</label><input type="text" id="filterResp" class="fc" placeholder="Nombre…" oninput="renderOrdersTable()"/></div>
-      <div class="fgroup"><label>Buscar N°</label><input type="text" id="searchInput" class="fc" placeholder="N.° pedido…" oninput="renderOrdersTable()"/></div>
     </div>
     <div class="bulk-bar" id="bulkBar">
       <span class="bulk-bar-label" id="bulkLabel">0 seleccionados</span>
@@ -438,6 +479,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
   </div>
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
+<div class="gc-select-hint" id="gcSelectHint">✓ Modo selección — tocá cards para marcar</div>
 
 <!-- FIREBASE SDK -->
 <script type="module">
@@ -491,12 +533,106 @@ function switchTab(id,btn){
 window.switchTab=switchTab;
 
 /* ══ MODAL ══ */
-let modalQueue = []; // [{src, caption, filename}]
+let modalQueue = [];
 let modalIndex = 0;
+
+// ── Pinch/zoom & swipe state ──
+let _mScale = 1, _mMinScale = 1, _mMaxScale = 4;
+let _mPanX = 0, _mPanY = 0;
+let _mLastDist = null;
+let _mLastMidX = 0, _mLastMidY = 0;
+let _mIsDragging = false;
+let _mDragStartX = 0, _mDragStartY = 0;
+let _mPanStartX = 0, _mPanStartY = 0;
+let _mSwipeStartX = 0, _mSwipeStartY = 0;
+let _mTouches = 0;
+
+function _resetZoom(){
+  _mScale = 1; _mPanX = 0; _mPanY = 0;
+  const img = document.getElementById('modalImg');
+  if(img){ img.style.transform = ''; img.classList.remove('zoomed','dragging'); }
+}
+function _applyTransform(){
+  const img = document.getElementById('modalImg');
+  if(!img) return;
+  img.style.transform = `scale(${_mScale}) translate(${_mPanX/_mScale}px,${_mPanY/_mScale}px)`;
+  img.classList.toggle('zoomed', _mScale > 1);
+}
+function _dist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
+function _mid(t){ return {x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2}; }
+
+function _setupModalTouch(){
+  const img = document.getElementById('modalImg');
+  if(!img || img._touchBound) return;
+  img._touchBound = true;
+
+  img.addEventListener('touchstart', e => {
+    _mTouches = e.touches.length;
+    if(_mTouches === 1){
+      _mSwipeStartX = e.touches[0].clientX;
+      _mSwipeStartY = e.touches[0].clientY;
+      if(_mScale > 1){
+        _mIsDragging = true;
+        _mDragStartX = e.touches[0].clientX;
+        _mDragStartY = e.touches[0].clientY;
+        _mPanStartX = _mPanX;
+        _mPanStartY = _mPanY;
+        img.classList.add('dragging');
+      }
+    } else if(_mTouches === 2){
+      _mLastDist = _dist(e.touches);
+      const m = _mid(e.touches);
+      _mLastMidX = m.x; _mLastMidY = m.y;
+    }
+    e.preventDefault();
+  }, {passive:false});
+
+  img.addEventListener('touchmove', e => {
+    if(e.touches.length === 2){
+      const d = _dist(e.touches);
+      const ratio = d / (_mLastDist || d);
+      _mScale = Math.min(_mMaxScale, Math.max(_mMinScale, _mScale * ratio));
+      _mLastDist = d;
+      _applyTransform();
+    } else if(e.touches.length === 1 && _mIsDragging){
+      _mPanX = _mPanStartX + (e.touches[0].clientX - _mDragStartX);
+      _mPanY = _mPanStartY + (e.touches[0].clientY - _mDragStartY);
+      _applyTransform();
+    }
+    e.preventDefault();
+  }, {passive:false});
+
+  img.addEventListener('touchend', e => {
+    img.classList.remove('dragging');
+    _mIsDragging = false;
+    _mLastDist = null;
+    if(_mTouches === 1 && _mScale <= 1){
+      const dx = e.changedTouches[0].clientX - _mSwipeStartX;
+      const dy = Math.abs(e.changedTouches[0].clientY - _mSwipeStartY);
+      if(Math.abs(dx) > 45 && dy < 60){
+        if(dx < 0) window.navigateModal(1);
+        else window.navigateModal(-1);
+      }
+    }
+    _mTouches = 0;
+  }, {passive:true});
+
+  // Double-tap to zoom/reset
+  let _lastTap = 0;
+  img.addEventListener('touchend', e => {
+    const now = Date.now();
+    if(now - _lastTap < 280){
+      if(_mScale > 1) _resetZoom();
+      else { _mScale = 2.5; _applyTransform(); }
+    }
+    _lastTap = now;
+  }, {passive:true});
+}
 
 function _applyModal(idx){
   const item = modalQueue[idx];
   if(!item) return;
+  _resetZoom();
   const img = document.getElementById('modalImg');
   img.style.opacity = '0';
   img.src = item.src;
@@ -515,6 +651,7 @@ function _applyModal(idx){
   } else {
     nav.style.display = 'none';
   }
+  _setupModalTouch();
 }
 
 function openModalWith(src, caption, filename){
@@ -525,12 +662,11 @@ function openModalWith(src, caption, filename){
 }
 
 function openOrderModal(orderId){
-  // Build queue from currently visible/filtered orders
-  const query2 = (document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  const query2 = (document.getElementById('globalSearch')||{value:''}).value.trim().toLowerCase();
   const filterTurno = (document.getElementById('filterTurno')||{value:''}).value;
   const filterResp = (document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
   let items = [...allOrders].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-  if(selectedOrderDay) items = items.filter(o => dateKey(o.fecha) === selectedOrderDay);
+  if(!globalSearchActive && selectedOrderDay) items = items.filter(o => dateKey(o.fecha) === selectedOrderDay);
   if(filterTurno) items = items.filter(o => o.turno === filterTurno);
   if(filterResp) items = items.filter(o => (o.responsable||'').toLowerCase().includes(filterResp));
   if(query2) items = items.filter(o => o.orderNumber.toLowerCase().includes(query2));
@@ -553,13 +689,36 @@ window.navigateModal = function(dir){
 };
 
 function closeModal(e){
-  if(!e || e.target === document.getElementById('modalOverlay'))
+  if(!e || e.target === document.getElementById('modalOverlay')){
     document.getElementById('modalOverlay').classList.remove('open');
+    _resetZoom();
+  }
 }
 window.closeModal = closeModal;
 window.openOrderModal = openOrderModal;
 
-/* ══ IMAGE COMPRESS ══ */
+/* ══ SOUND ══ */
+function playSaveSound(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // Two-note chime: C5 then E5
+    [[523.25,0],[659.25,0.12]].forEach(([freq,delay])=>{
+      const osc=ctx.createOscillator();const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type='sine';osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0,ctx.currentTime+delay);
+      gain.gain.linearRampToValueAtTime(0.25,ctx.currentTime+delay+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.38);
+      osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+0.4);
+    });
+  }catch(e){}
+}
+
+/* ══ NEW CARD FLASH ══ */
+let _justSavedIds = new Set();
+function markJustSaved(ids){ ids.forEach(id=>_justSavedIds.add(id)); setTimeout(()=>{ ids.forEach(id=>_justSavedIds.delete(id)); },3500); }
+
+
 function compressImage(dataUrl, maxDim=1200, quality=0.82){
   return new Promise(resolve=>{
     const img=new Image();
@@ -735,28 +894,65 @@ function renderMultiPreviews(){
 window.removePending=function(i){pendingOrders.splice(i,1);renderMultiPreviews();};
 window.resetOrderForm=function(){pendingOrders=[];document.getElementById('ticketInput').value='';document.getElementById('order-turno').value='';document.getElementById('order-resp').value='';renderMultiPreviews();};
 
+/* ══ GLOBAL SEARCH ══ */
+let globalSearchQuery = '';
+let globalSearchActive = false;
+
+window.onGlobalSearch = function(val){
+  globalSearchQuery = val.trim().toLowerCase();
+  globalSearchActive = globalSearchQuery.length > 0;
+  const clearBtn = document.getElementById('gsClear');
+  if(clearBtn) clearBtn.classList.toggle('visible', globalSearchActive);
+  renderOrdersTable();
+};
+
+window.clearGlobalSearch = function(){
+  globalSearchQuery = '';
+  globalSearchActive = false;
+  const inp = document.getElementById('globalSearch');
+  if(inp) inp.value = '';
+  const clearBtn = document.getElementById('gsClear');
+  if(clearBtn) clearBtn.classList.remove('visible');
+  renderOrdersTable();
+};
+
 /* ══ ORDERS TABLE ══ */
 let selectedIds=new Set();
 let selectedOrderDay=null;
 let allOrders=[];
 
 window.renderOrdersTable = function renderOrdersTable(){
-  const query2=(document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  const query2=(document.getElementById('globalSearch')||{value:''}).value.trim().toLowerCase();
   const filterTurno=(document.getElementById('filterTurno')||{value:''}).value;
   const filterResp=(document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
   const tabsEl=document.getElementById('orderDayTabs');const tbody=document.getElementById('ordersTableBody');
   const emptyEl=document.getElementById('ordersEmpty');const countEl=document.getElementById('ordersCount');
+  const gsNote=document.getElementById('gsNote');
   const all=[...allOrders].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
 
-  if(!all.length){tabsEl.innerHTML='';tbody.innerHTML='';emptyEl.style.display='block';countEl.innerHTML='';updateBulkBar();return;}
+  if(!all.length){tabsEl.innerHTML='';tbody.innerHTML='';emptyEl.style.display='block';countEl.innerHTML='';if(gsNote)gsNote.style.display='none';updateBulkBar();return;}
   const days=[...new Set(all.map(o=>dateKey(o.fecha)))];const todayKey=dateKey(new Date().toISOString());
   if(!selectedOrderDay||!days.includes(selectedOrderDay))selectedOrderDay=days[0];
-  tabsEl.innerHTML=days.map(d=>`<button class="day-tab${d===selectedOrderDay?' active':''}${d===todayKey?' today-marker':''}" onclick="selectOrderDay('${d}')">${d}${d===todayKey?' ·hoy':''}</button>`).join('');
 
-  let items=all.filter(o=>dateKey(o.fecha)===selectedOrderDay);
-  if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
-  if(filterResp)items=items.filter(o=>(o.responsable||'').toLowerCase().includes(filterResp));
-  if(query2)items=items.filter(o=>o.orderNumber.toLowerCase().includes(query2));
+  let items;
+  if(globalSearchActive && query2){
+    // global: search across ALL days
+    tabsEl.innerHTML=days.map(d=>`<button class="day-tab${d===selectedOrderDay?' active':''}${d===todayKey?' today-marker':''}" onclick="selectOrderDay('${d}')">${d}${d===todayKey?' ·hoy':''}</button>`).join('');
+    items=all.filter(o=>o.orderNumber.toLowerCase().includes(query2));
+    if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
+    if(filterResp)items=items.filter(o=>(o.responsable||'').toLowerCase().includes(filterResp));
+    if(gsNote){
+      const daySet=new Set(items.map(o=>dateKey(o.fecha)));
+      gsNote.style.display=items.length?'block':'none';
+      gsNote.textContent=items.length?`🔎 ${items.length} resultado${items.length!==1?'s':''} en ${daySet.size} día${daySet.size!==1?'s':''}`:'';}
+  } else {
+    // normal: filter by selected day
+    tabsEl.innerHTML=days.map(d=>`<button class="day-tab${d===selectedOrderDay?' active':''}${d===todayKey?' today-marker':''}" onclick="selectOrderDay('${d}')">${d}${d===todayKey?' ·hoy':''}</button>`).join('');
+    items=all.filter(o=>dateKey(o.fecha)===selectedOrderDay);
+    if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
+    if(filterResp)items=items.filter(o=>(o.responsable||'').toLowerCase().includes(filterResp));
+    if(gsNote)gsNote.style.display='none';
+  }
 
   countEl.innerHTML=items.length?`<strong>${items.length}</strong> pedido${items.length!==1?'s':''} el ${selectedOrderDay}`:'';
   if(!items.length){tbody.innerHTML='';emptyEl.style.display='block';updateBulkBar();renderOrdersGallery([],query2);return;}
@@ -824,8 +1020,10 @@ window.clearSelection=function(){
   selectedIds.clear();
   document.querySelectorAll('.row-check').forEach(c=>c.checked=false);
   document.querySelectorAll('.selected-row').forEach(r=>r.classList.remove('selected-row'));
+  document.querySelectorAll('.gallery-card').forEach(c=>c.classList.remove('gc-selected'));
   const ca=document.getElementById('checkAll');if(ca)ca.checked=false;
   updateBulkBar();
+  if(typeof exitTouchSelectMode === 'function') exitTouchSelectMode();
 };
 function updateBulkBar(){
   const bar=document.getElementById('bulkBar');const label=document.getElementById('bulkLabel');
@@ -923,14 +1121,19 @@ window.saveAllOrders=async function(){
   if(!pendingOrders.length){toast('No hay fotos cargadas','err');return}
   setSyncDot('syncing');
   try{
+    const savedIds = [];
     for(const item of pendingOrders){
       const num=(item.orderNumber||'').trim()||'desconocido';
-      await addDoc(collection(db,'orders'),{
+      const ref = await addDoc(collection(db,'orders'),{
         fecha:new Date().toISOString(),orderNumber:num,
         imageDataUrl:item.imgDataUrl,turno,responsable:resp
       });
+      savedIds.push(ref.id);
     }
     setSyncDot('ok');
+    playSaveSound();
+    markJustSaved(savedIds);
+    navigator.vibrate && navigator.vibrate([60,40,60]);
     const n=pendingOrders.length;
     window.resetOrderForm();
     toast(`${n} pedido${n!==1?'s':''} guardado${n!==1?'s':''}`, 'ok');
@@ -1085,7 +1288,7 @@ ${rows}
 };
 
 /* ══ ORDER VIEW TOGGLE ══ */
-let currentOrderView = 'table'; // 'table' | 'gallery'
+let currentOrderView = 'gallery';
 
 window.setOrderView = function(view) {
   currentOrderView = view;
@@ -1113,8 +1316,8 @@ function renderOrdersGallery(items, query2){
   const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
   function expiryBadge(iso){const d=daysAgo(iso);if(d<=2)return`<span class="expiry-badge exp-ok" style="font-size:.55rem">✔ ${5-d}d</span>`;if(d<=4)return`<span class="expiry-badge exp-soon" style="font-size:.55rem">⚡ pronto</span>`;return`<span class="expiry-badge exp-old" style="font-size:.55rem">❗ hoy</span>`;}
   gallery.innerHTML = items.map(o=>`
-    <div class="gallery-card${selectedIds.has(o.id)?' gc-selected':''}" id="gc-${o.id}">
-      <div class="gc-img-wrap" onclick="openOrderModal('${o.id}')">
+    <div class="gallery-card${selectedIds.has(o.id)?' gc-selected':''}${_justSavedIds.has(o.id)?' gc-new':''}" id="gc-${o.id}">
+      <div class="gc-img-wrap" onclick="gcHandleClick('${o.id}')">
         <img src="${o.imageDataUrl}" loading="lazy" alt="Pedido #${escHtml(o.orderNumber||'?')}"/>
         <div class="gc-check" onclick="event.stopPropagation()">
           <input type="checkbox" class="row-check" ${selectedIds.has(o.id)?'checked':''} onchange="toggleRow('${o.id}',this)"/>
@@ -1142,7 +1345,58 @@ function renderOrdersGallery(items, query2){
         </div>
       </div>
     </div>`).join('');
+
+  // ── Long-press to enter touch-select mode ──
+  let _lpTimer = null;
+  let _lpMoved = false;
+  const gc = document.getElementById('ordersGallery');
+  gc.querySelectorAll('.gallery-card').forEach(card => {
+    const id = card.id.replace('gc-','');
+    card.addEventListener('touchstart', e => {
+      _lpMoved = false;
+      _lpTimer = setTimeout(() => {
+        if(_lpMoved) return;
+        navigator.vibrate && navigator.vibrate(40);
+        enterTouchSelectMode();
+        // select this card
+        const cb = card.querySelector('.row-check');
+        if(cb && !cb.checked){ cb.checked = true; toggleRow(id, cb); }
+      }, 500);
+    }, {passive:true});
+    card.addEventListener('touchmove', () => { _lpMoved = true; clearTimeout(_lpTimer); }, {passive:true});
+    card.addEventListener('touchend', () => clearTimeout(_lpTimer), {passive:true});
+    card.addEventListener('touchcancel', () => clearTimeout(_lpTimer), {passive:true});
+  });
 }
+
+/* ══ TOUCH SELECT MODE ══ */
+let _touchSelectActive = false;
+
+window.enterTouchSelectMode = function(){
+  if(_touchSelectActive) return;
+  _touchSelectActive = true;
+  document.getElementById('ordersGallery').classList.add('touch-select-mode');
+  const hint = document.getElementById('gcSelectHint');
+  hint.classList.add('visible');
+  setTimeout(() => hint.classList.remove('visible'), 2500);
+};
+
+window.exitTouchSelectMode = function(){
+  _touchSelectActive = false;
+  document.getElementById('ordersGallery').classList.remove('touch-select-mode');
+};
+
+window.gcHandleClick = function(id){
+  if(_touchSelectActive){
+    // toggle selection
+    const cb = document.querySelector(`#gc-${id} .row-check`);
+    if(cb){ cb.checked = !cb.checked; toggleRow(id, cb); }
+    // if nothing selected, exit mode
+    if(selectedIds.size === 0) exitTouchSelectMode();
+  } else {
+    openOrderModal(id);
+  }
+};
 
 /* ══ REALTIME LISTENERS ══ */
 function setupListeners(){
