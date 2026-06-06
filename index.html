@@ -44,6 +44,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .shell{display:flex;flex-direction:column;min-height:100dvh}
 
 /* ── HEADER ── */
+@media(max-width:600px){
+  header {
+    padding: 0 0.75rem;  /* Reducir de 1rem a 0.75rem */
+    min-height: 56px;    /* Aumentar a 56px para mejor touch target */
+    gap: 0.5rem;         /* Agregar gap entre left y right */
+    flex-wrap: wrap;     /* Permitir wrap en móviles muy pequeños */
+  }
+}
 header{
   background:var(--red);display:flex;align-items:center;justify-content:space-between;
   padding:0 1rem;
@@ -51,12 +59,24 @@ header{
   padding-top:env(safe-area-inset-top,0px);
   position:sticky;top:0;z-index:200;
   box-shadow:0 1px 0 rgba(0,0,0,.3);
+
 }
 .hb{display:flex;align-items:center;gap:.6rem}
 .hb-logo-img{width:32px;height:32px;border-radius:7px;object-fit:cover;flex-shrink:0;display:block;}
 .hb-name{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.04em;line-height:1}
 .hb-name span{color:var(--gold)}
+@media(max-width:600px){
+  .header-right {
+    gap: 0.3rem;  /* Reducir de .5rem a .3rem */
+    font-size: 0.8rem; /* Hacer más pequeño el contenido */
+  }
+}
 .header-right{display:flex;align-items:center;gap:.5rem}
+@media(max-width:600px){
+  .clock {
+    font-size: 0.75rem;  /* Reducir de .88rem a .75rem */
+  }
+}
 .clock{font-family:var(--font-display);font-size:.88rem;color:rgba(255,255,255,.7);letter-spacing:.1em}
 .date-badge{font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.25);border-radius:99px;padding:.2rem .55rem;color:rgba(255,255,255,.8);}
 /* sync indicator */
