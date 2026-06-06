@@ -46,13 +46,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 /* ── HEADER ── */
 header{
   background:var(--red);display:flex;align-items:center;justify-content:space-between;
-  padding:0 1rem;height:54px;
-  padding-top:var(--safe-top);
+  padding:0 1rem;
+  min-height:54px;
+  padding-top:env(safe-area-inset-top,0px);
   position:sticky;top:0;z-index:200;
   box-shadow:0 2px 20px var(--red-glow);
 }
 .hb{display:flex;align-items:center;gap:.6rem}
-.hb-logo-img{width:40px;height:40px;border-radius:10px;object-fit:cover;flex-shrink:0;display:block;}
+.hb-logo-img{width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;display:block;}
 .hb-name{font-family:var(--font-display);font-size:1.6rem;letter-spacing:.04em;line-height:1}
 .hb-name span{color:var(--gold)}
 .header-right{display:flex;align-items:center;gap:.5rem}
@@ -64,7 +65,7 @@ header{
 .sync-dot.err{background:var(--red)}
 
 /* ── TABS ── */
-nav.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:54px;z-index:190;}
+nav.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:calc(54px + env(safe-area-inset-top,0px));z-index:190;}
 nav.tabs button{flex:1;padding:.75rem .4rem;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-family:var(--font-display);font-size:1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;transition:color var(--t),border-color var(--t),background var(--t);}
 nav.tabs button:hover{color:var(--text);background:var(--surface2)}
 nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(255,184,0,.05)}
@@ -339,7 +340,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
     <div class="fgrid">
       <div class="fgroup">
         <label>Turno <span class="req">*</span></label>
-        <select id="t-turno" class="fc">
+        <select id="t-turno" class="fc" onchange="updateStockVisibility(this.value)">
           <option value="">— Seleccioná —</option>
           <option value="Aper">🌅 Apertura</option>
           <option value="Medio">☀️ Medio</option>
@@ -363,8 +364,8 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
         <div class="upload-zone"><input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('rating',event)"/><div class="uz-icon">📷</div><div class="uz-label">Foto</div><div class="uz-hint">App rating</div></div>
         <div class="thumb-preview-row" id="prev-rating"></div>
       </div>
-      <div class="photo-upload-block">
-        <span class="pub-label">📦 Stock <span class="req" style="color:var(--gold)">*</span></span>
+      <div class="photo-upload-block" id="stock-block">
+        <span class="pub-label" id="stock-label">📦 Stock <span class="req" id="stock-req" style="color:var(--gold)">*</span></span>
         <div class="upload-zone"><input type="file" accept="image/*" capture="environment" onchange="handleTurnoPhoto('stock',event)"/><div class="uz-icon">📷</div><div class="uz-label">Foto</div><div class="uz-hint">Carro delivery</div></div>
         <div class="thumb-preview-row" id="prev-stock"></div>
       </div>
@@ -424,6 +425,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost btn-sm" onclick="resetOrderForm()">Limpiar</button>
+      <button class="btn btn-ghost btn-sm" id="scanPendingBtn" onclick="scanAllPending()" disabled>🔍 Escanear</button>
       <button class="btn btn-primary" id="saveOrderBtn" onclick="saveAllOrders()" disabled>💾 Guardar Todos</button>
     </div>
   </div>
@@ -434,7 +436,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
         <button class="vt-btn" id="vt-table" onclick="setOrderView('table')" title="Vista tabla">☰</button>
         <button class="vt-btn active" id="vt-gallery" onclick="setOrderView('gallery')" title="Vista galería">▦</button>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
+      <button class="btn btn-ghost btn-sm" id="batchOcrBtn" onclick="batchRescanAll()" title="Re-escanear todos los pedidos sin número">🔄 Escanear</button><button class="btn btn-ghost btn-sm" onclick="exportPDF()">📄 PDF</button><button class="btn btn-red btn-sm" onclick="clearAllOrders()">Borrar todo</button></div></div>
     <div class="global-search-wrap">
       <span class="gs-icon">🔍</span>
       <input type="text" id="globalSearch" class="fc" placeholder="Buscar en todos los días…" oninput="onGlobalSearch(this.value)" autocomplete="off"/>
@@ -487,6 +489,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
   </div>
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
+<div class="connecting-banner" id="connectingBanner"><span class="cb-dot"></span> Conectando…</div>
 <div class="gc-select-hint" id="gcSelectHint">✓ Modo selección — tocá cards para marcar</div>
 
 <!-- FIREBASE SDK -->
@@ -779,7 +782,8 @@ async function savePase(){
   const resp=document.getElementById('t-resp').value.trim();
   if(!turno||!resp){toast('Completá Turno y Responsable','err');return}
   if(!turnoPhotos.tph){toast('La foto TPH es obligatoria','err');return}
-  if(!turnoPhotos.stock){toast('La foto de Stock es obligatoria','err');return}
+  const turnoVal=document.getElementById('t-turno').value;
+if(!turnoPhotos.stock && turnoVal!=='Cierre'){toast('La foto de Stock es obligatoria','err');return}
   setSyncDot('syncing');
   try{
     await addDoc(collection(db,'pases'),{
@@ -798,6 +802,24 @@ function clearTurnoForm(){
   ['tph','rating','stock','califs'].forEach(k=>{turnoPhotos[k]=null;renderTurnoPhotoPreview(k);});
 }
 window.clearTurnoForm=clearTurnoForm;
+
+window.updateStockVisibility = function(turno){
+  const block = document.getElementById('stock-block');
+  const req = document.getElementById('stock-req');
+  if(!block) return;
+  if(turno === 'Cierre'){
+    block.style.opacity = '.35';
+    block.style.pointerEvents = 'none';
+    if(req) req.style.display = 'none';
+    // Clear stock photo if already loaded
+    turnoPhotos.stock = null;
+    renderTurnoPhotoPreview('stock');
+  } else {
+    block.style.opacity = '';
+    block.style.pointerEvents = '';
+    if(req) req.style.display = '';
+  }
+};
 
 async function clearAllPases(){
   if(!confirm('¿Borrar TODOS los pases?'))return;
@@ -834,12 +856,12 @@ function renderPaseHistory(){
   const badgeCls={Aper:'badge-aper',Medio:'badge-medio',Cierre:'badge-cierre'};
   const photoLabels={tph:'TPH',rating:'Rating',stock:'Stock',califs:'Califs'};
   histEl.innerHTML=filtered.map(p=>{
-    const thumbs=Object.entries(p.photos||{}).filter(([,v])=>v).map(([k,v])=>`
+    const _photoOrder=['tph','rating','stock','califs'];const thumbs=_photoOrder.filter(k=>p.photos&&p.photos[k]).map(k=>{const v=p.photos[k];return `
       <div>
         <div class="hi-thumb" onclick="openModalWith('${v}','${photoLabels[k]}','${k}.jpg')"><img src="${v}" loading="lazy"/></div>
         <div class="hi-thumb-label">${photoLabels[k]}</div>
         <a style="font-size:.57rem;color:var(--muted);display:block;text-align:center;margin-top:.1rem" href="${v}" download="${k}.jpg">⬇</a>
-      </div>`).join('');
+      </div>`;}).join('');
     return `<div class="history-item">
       <div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0">
         <span class="hi-badge ${badgeCls[p.turno]||'badge-aper'}">${p.turno}</span>
@@ -876,8 +898,8 @@ window.handleMultiUpload=handleMultiUpload;
 
 function renderMultiPreviews(){
   const wrap=document.getElementById('multiPreviewWrap');const list=document.getElementById('multiPreviewList');
-  if(!pendingOrders.length){wrap.style.display='none';document.getElementById('saveOrderBtn').disabled=true;return;}
-  wrap.style.display='block';document.getElementById('saveOrderBtn').disabled=false;
+  if(!pendingOrders.length){wrap.style.display='none';document.getElementById('saveOrderBtn').disabled=true;const sb=document.getElementById('scanPendingBtn');if(sb)sb.disabled=true;return;}
+  wrap.style.display='block';document.getElementById('saveOrderBtn').disabled=false;const sb=document.getElementById('scanPendingBtn');if(sb)sb.disabled=false;
   list.innerHTML=pendingOrders.map((item,i)=>`
     <div class="pending-row" id="pending-row-${i}">
       <div class="pending-thumb" onclick="openModalWith('${item.imgDataUrl}','Foto ${i+1}','pedido-${i+1}.jpg')">
@@ -1112,6 +1134,41 @@ window.autoDetectNumber=async function(i){
   finally{renderMultiPreviews();const el=document.getElementById('order-num-'+i);if(el)el.disabled=false;}
 };
 
+window.scanAllPending = async function(){
+  if(!pendingOrders.length) return;
+  const btn = document.getElementById('scanPendingBtn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Escaneando…'; }
+  let ok=0;
+  for(let i=0;i<pendingOrders.length;i++){
+    // skip if already has a real number
+    if(pendingOrders[i].orderNumber && pendingOrders[i].orderNumber !== 'desconocido') continue;
+    pendingOrders[i].hint='⏳ Analizando…'; pendingOrders[i].hintColor='var(--muted)';
+    renderMultiPreviews();
+    try{
+      const resized=await resizeImageForOCR(pendingOrders[i].imgDataUrl,1600);
+      const base64=resized.split(',')[1];
+      const formData=new FormData();
+      formData.append('base64Image','data:image/jpeg;base64,'+base64);
+      formData.append('apikey','K81160960288957');
+      formData.append('language','spa');
+      formData.append('isOverlayRequired','false');
+      formData.append('detectOrientation','true');
+      formData.append('scale','true');
+      formData.append('OCREngine','2');
+      const res=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
+      const data=await res.json();
+      let text=data.ParsedResults?.[0]?.ParsedText||'';
+      const found=extractBestNumber(text);
+      if(found){ pendingOrders[i].orderNumber=found; pendingOrders[i].hint='✅ #'+found+' detectado'; pendingOrders[i].hintColor='var(--green)'; ok++; }
+      else{ pendingOrders[i].hint='⚠️ No detectado'; pendingOrders[i].hintColor='var(--orange)'; }
+    }catch(e){ pendingOrders[i].hint='❌ Error'; pendingOrders[i].hintColor='var(--red)'; }
+    renderMultiPreviews();
+    await new Promise(r=>setTimeout(r,350));
+  }
+  if(btn){ btn.disabled=false; btn.textContent='🔍 Escanear'; }
+  toast(`Escaneados: ✅ ${ok} / ${pendingOrders.length}`, 'ok');
+};
+
 function extractBestNumber(text){
   if(!text||text.trim()==='NOTFOUND')return null;
   const mPickup=text.match(/pick\s*up[^\d]*(\d{4,12})/i);if(mPickup)return mPickup[1];
@@ -1207,7 +1264,7 @@ window.exportPDF = function(){
   // Determine which orders to export: current day + filters
   const filterTurno=(document.getElementById('filterTurno')||{value:''}).value;
   const filterResp=(document.getElementById('filterResp')||{value:''}).value.trim().toLowerCase();
-  const searchQ=(document.getElementById('searchInput')||{value:''}).value.trim().toLowerCase();
+  const searchQ=(document.getElementById('globalSearch')||{value:''}).value.trim().toLowerCase();
   let items=[...allOrders].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
   if(selectedOrderDay)items=items.filter(o=>dateKey(o.fecha)===selectedOrderDay);
   if(filterTurno)items=items.filter(o=>o.turno===filterTurno);
@@ -1406,17 +1463,66 @@ window.gcHandleClick = function(id){
   }
 };
 
+/* ══ BATCH RE-SCAN ══ */
+window.batchRescanAll = async function(){
+  const unknowns = allOrders.filter(o => !o.orderNumber || o.orderNumber === 'desconocido');
+  if(!unknowns.length){ toast('Todos los pedidos ya tienen número ✓','ok'); return; }
+  const btn = document.getElementById('batchOcrBtn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Escaneando…'; }
+  toast(`Escaneando ${unknowns.length} pedido${unknowns.length!==1?'s':''}…`,'ok');
+  let ok=0, fail=0;
+  for(const o of unknowns){
+    try{
+      const resized = await resizeImageForOCR(o.imageDataUrl, 1600);
+      const base64 = resized.split(',')[1];
+      const formData = new FormData();
+      formData.append('base64Image','data:image/jpeg;base64,'+base64);
+      formData.append('apikey','K81160960288957');
+      formData.append('language','spa');
+      formData.append('isOverlayRequired','false');
+      formData.append('detectOrientation','true');
+      formData.append('scale','true');
+      formData.append('OCREngine','2');
+      const res = await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
+      const data = await res.json();
+      let text = data.ParsedResults?.[0]?.ParsedText || '';
+      const found = extractBestNumber(text);
+      if(found){
+        const {updateDoc} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        await updateDoc(doc(db,'orders',o.id),{orderNumber:found});
+        ok++;
+      } else { fail++; }
+    } catch(e){ fail++; }
+    // Yield between requests to avoid rate limits
+    await new Promise(r=>setTimeout(r,350));
+  }
+  if(btn){ btn.disabled=false; btn.textContent='🔄 Escanear'; }
+  toast(`Escaneado: ✅ ${ok} detectados${fail?' · ⚠️ '+fail+' sin resultado':''}`, ok>0?'ok':'err');
+};
+
 /* ══ REALTIME LISTENERS ══ */
+function showConnectingBanner(){ const b=document.getElementById('connectingBanner'); if(b) b.classList.add('visible'); }
+function hideConnectingBanner(){ const b=document.getElementById('connectingBanner'); if(b) b.classList.remove('visible'); }
+
 function setupListeners(){
-  // Pases
+  showConnectingBanner();
+  let paseLoaded=false, ordersLoaded=false;
+  function checkAllLoaded(){ if(paseLoaded && ordersLoaded){ hideConnectingBanner(); setSyncDot('ok'); } }
+
+  // Pases — sin imageDataUrl para cargar rápido; imágenes sólo al expandir
   onSnapshot(query(collection(db,'pases'),orderBy('fecha','desc')),(snap)=>{
     allPases=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderPaseHistory();
+    if(!paseLoaded){ paseLoaded=true; checkAllLoaded(); }
   });
-  // Orders
+
+  // Orders — cargamos sin imageDataUrl primero para velocidad
+  // Firestore no soporta proyecciones en onSnapshot web SDK, pero podemos
+  // paginarse lazy: cargamos metadata (sin imagen) y la imagen sólo al renderizar
   onSnapshot(query(collection(db,'orders'),orderBy('fecha','desc')),(snap)=>{
     allOrders=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderOrdersTable();
+    if(!ordersLoaded){ ordersLoaded=true; checkAllLoaded(); }
     setSyncDot('ok');
   });
 }
@@ -1425,6 +1531,7 @@ function setupListeners(){
 startClock();
 setSyncDot('syncing');
 setupListeners();
+showConnectingBanner();
 setTimeout(()=>{document.getElementById('loadingOverlay').classList.add('hidden');},1200);
 
 // Keyboard navigation for modal
