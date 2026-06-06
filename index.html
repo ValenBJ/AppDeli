@@ -19,8 +19,8 @@
 :root{
   --red:#C8102E;--red2:#A50025;--red-glow:rgba(200,16,46,.4);
   --gold:#FFB800;--gold2:#E6A500;--gold-glow:rgba(255,184,0,.35);
-  --bg:#0D0D0D;--surface:#161616;--surface2:#1F1F1F;--surface3:#2A2A2A;
-  --border:#2E2E2E;--border2:#3A3A3A;
+  --bg:#0A0A0A;--surface:#141414;--surface2:#1C1C1C;--surface3:#252525;
+  --border:#252525;--border2:#323232;
   --text:#F0F0F0;--muted:#888;--faint:#444;
   --green:#22C55E;--orange:#F97316;--blue:#3B82F6;
   --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;
@@ -47,17 +47,17 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 header{
   background:var(--red);display:flex;align-items:center;justify-content:space-between;
   padding:0 1rem;
-  min-height:54px;
+  min-height:50px;
   padding-top:env(safe-area-inset-top,0px);
   position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 20px var(--red-glow);
+  box-shadow:0 1px 0 rgba(0,0,0,.3);
 }
 .hb{display:flex;align-items:center;gap:.6rem}
-.hb-logo-img{width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;display:block;}
-.hb-name{font-family:var(--font-display);font-size:1.6rem;letter-spacing:.04em;line-height:1}
+.hb-logo-img{width:32px;height:32px;border-radius:7px;object-fit:cover;flex-shrink:0;display:block;}
+.hb-name{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.04em;line-height:1}
 .hb-name span{color:var(--gold)}
 .header-right{display:flex;align-items:center;gap:.5rem}
-.clock{font-family:var(--font-display);font-size:1rem;color:rgba(255,255,255,.75);letter-spacing:.1em}
+.clock{font-family:var(--font-display);font-size:.88rem;color:rgba(255,255,255,.7);letter-spacing:.1em}
 .date-badge{font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.25);border-radius:99px;padding:.2rem .55rem;color:rgba(255,255,255,.8);}
 /* sync indicator */
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background .3s}
@@ -66,28 +66,28 @@ header{
 
 /* ── TABS ── */
 nav.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:calc(54px + env(safe-area-inset-top,0px));z-index:190;}
-nav.tabs button{flex:1;padding:.75rem .4rem;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-family:var(--font-display);font-size:1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;transition:color var(--t),border-color var(--t),background var(--t);}
+nav.tabs button{flex:1;padding:.6rem .4rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font-display);font-size:.92rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.3rem;transition:color var(--t),border-color var(--t),background var(--t);}
 nav.tabs button:hover{color:var(--text);background:var(--surface2)}
 nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(255,184,0,.05)}
 
 /* ── MAIN ── */
-main{padding:1rem;max-width:860px;margin:0 auto;width:100%;flex:1;padding-bottom:calc(1rem + var(--safe-bot))}
+main{padding:.75rem;max-width:860px;margin:0 auto;width:100%;flex:1;padding-bottom:calc(.75rem + var(--safe-bot))}
 .tab-panel{display:none;animation:fadeUp .22s ease both}
 .tab-panel.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── SECTION TITLE ── */
-.stitle{font-family:var(--font-display);font-size:1.7rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;}
+.stitle{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 .stitle .chip{font-family:var(--font-body);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:#000;padding:.2rem .5rem;border-radius:99px;}
 
 /* ── CARD ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem;margin-bottom:1rem;}
-.card-title{font-family:var(--font-display);font-size:1.05rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.2rem 1rem;margin-bottom:.75rem;}
+.card-title{font-family:var(--font-display);font-size:.95rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
 .card-title span{display:flex;align-items:center;gap:.4rem}
 
 /* ── FORMS ── */
-.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
-.fgroup{display:flex;flex-direction:column;gap:.3rem}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem}
+.fgroup{display:flex;flex-direction:column;gap:.25rem}
 .fgroup label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .fgroup label .req{color:var(--gold);margin-left:.15rem}
 .fc{background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:.92rem;padding:.55rem .75rem;width:100%;outline:none;transition:border-color var(--t),box-shadow var(--t);appearance:none;-webkit-appearance:none;}
@@ -95,19 +95,19 @@ main{padding:1rem;max-width:860px;margin:0 auto;width:100%;flex:1;padding-bottom
 select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23888' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;padding-right:2rem;cursor:pointer;}
 select.fc option{background:var(--surface2)}
 textarea.fc{resize:vertical;min-height:75px;line-height:1.5}
-.divider{border:none;border-top:1px solid var(--border);margin:.9rem 0}
+.divider{border:none;border-top:1px solid var(--border);margin:.6rem 0;opacity:.6}
 
 /* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border:none;border-radius:var(--r-sm);font-family:var(--font-display);font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all var(--t);text-decoration:none;white-space:nowrap;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.5rem 1rem;border:none;border-radius:var(--r-sm);font-family:var(--font-display);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all var(--t);text-decoration:none;white-space:nowrap;}
 .btn-primary{background:var(--gold);color:#000}
-.btn-primary:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:var(--shadow-gold)}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,184,0,.2)}
 .btn-red{background:var(--red);color:#fff}
 .btn-red:hover{background:var(--red2);box-shadow:var(--shadow-red)}
 .btn-ghost{background:var(--surface3);color:var(--muted);border:1px solid var(--border2)}
 .btn-ghost:hover{color:var(--text);background:var(--border)}
 .btn-sm{padding:.32rem .7rem;font-size:.75rem}
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-.btn-row{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.9rem;flex-wrap:wrap}
+.btn-row{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.65rem;flex-wrap:wrap}
 
 /* ── DAY TABS ── */
 .day-tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.9rem}
@@ -117,9 +117,9 @@ textarea.fc{resize:vertical;min-height:75px;line-height:1.5}
 .day-tab.today-marker{border-color:var(--red)}
 
 /* ── HISTORY ── */
-.history-list{display:flex;flex-direction:column;gap:.6rem}
-.history-item{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:.85rem 1rem;display:flex;align-items:flex-start;gap:.8rem;transition:border-color var(--t);}
-.history-item:hover{border-color:var(--gold)}
+.history-list{display:flex;flex-direction:column;gap:0}
+.history-item{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:.65rem 0;display:flex;align-items:flex-start;gap:.75rem;transition:border-color var(--t);}
+.history-item:hover{background:var(--surface2);border-radius:var(--r-sm);padding:.65rem .5rem;margin:0 -.5rem;}
 .hi-badge{flex-shrink:0;padding:.25rem .65rem;border-radius:99px;font-family:var(--font-display);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid;}
 .badge-aper{background:rgba(255,184,0,.15);color:var(--gold);border-color:rgba(255,184,0,.35)}
 .badge-medio{background:rgba(249,115,22,.15);color:var(--orange);border-color:rgba(249,115,22,.35)}
@@ -140,7 +140,7 @@ textarea.fc{resize:vertical;min-height:75px;line-height:1.5}
 .photo-upload-block{display:flex;flex-direction:column;gap:.3rem}
 .pub-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
 .opt-badge{font-size:.58rem;background:var(--surface3);border:1px solid var(--border2);color:var(--faint);padding:.08rem .35rem;border-radius:99px}
-.upload-zone{border:2px dashed var(--border2);border-radius:var(--r-md);padding:1rem .5rem;text-align:center;cursor:pointer;transition:all var(--t);background:var(--surface2);position:relative;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--r-md);padding:.85rem .5rem;text-align:center;cursor:pointer;transition:all var(--t);background:var(--surface2);position:relative;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;}
 .upload-zone:hover,.upload-zone.dragover{border-color:var(--gold);background:rgba(255,184,0,.04)}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .uz-icon{font-size:1.4rem}
@@ -301,6 +301,8 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 .gc-resp{font-size:.65rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;}
 .gc-actions{display:flex;gap:.22rem;margin-top:.4rem;}
 .gc-actions .btn{padding:.22rem .42rem;font-size:.65rem;}
+
+.history-list .history-item:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -495,7 +497,7 @@ input[type=checkbox].row-check{width:15px;height:15px;accent-color:var(--gold);c
 <!-- FIREBASE SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot, writeBatch, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD5hizWItQCNYUmq_OYbILT6oP1hIS1wqA",
@@ -525,9 +527,26 @@ function toast(msg,type='info'){
   w.appendChild(el);setTimeout(()=>el.remove(),3200);
 }
 
+let _retryTimer=null;
+let _isOnline=navigator.onLine;
+
+window.addEventListener('online', ()=>{ _isOnline=true; setSyncDot('syncing'); hideConnectingBanner(); setupListeners(); });
+window.addEventListener('offline',()=>{ _isOnline=false; setSyncDot('err'); showConnectingBanner('Sin conexión…'); });
+
+function friendlyError(e){
+  const msg=e?.message||'';
+  if(!navigator.onLine||msg.includes('network')||msg.includes('unavailable')) return 'Sin conexión — esperando red…';
+  if(msg.includes('permission')||msg.includes('PERMISSION')) return 'Sin permisos — revisá la configuración';
+  if(msg.includes('quota')||msg.includes('QUOTA')) return 'Cuota de Firebase alcanzada';
+  if(msg.includes('not-found')||msg.includes('NOT_FOUND')) return 'Documento no encontrado';
+  if(msg.includes('cancelled')||msg.includes('CANCELLED')) return 'Operación cancelada';
+  return 'Error al conectar — reintentando…';
+}
+
 function setSyncDot(state){
   const d=document.getElementById('syncDot');
   d.className='sync-dot'+(state==='syncing'?' syncing':state==='err'?' err':'');
+  d.title=state==='ok'?'Sincronizado':state==='syncing'?'Sincronizando…':'Error de conexión';
 }
 
 function startClock(){
@@ -793,7 +812,7 @@ if(!turnoPhotos.stock && turnoVal!=='Cierre'){toast('La foto de Stock es obligat
     });
     setSyncDot('ok');
     clearTurnoForm();toast(`Pase ${turno} guardado`,'ok');
-  }catch(e){setSyncDot('err');toast('Error al guardar: '+e.message,'err');}
+  }catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 }
 window.savePase=savePase;
 
@@ -829,14 +848,14 @@ async function clearAllPases(){
     const batch=writeBatch(db);
     snap.forEach(d=>batch.delete(d.ref));
     await batch.commit();setSyncDot('ok');toast('Pases borrados');
-  }catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
+  }catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 }
 window.clearAllPases=clearAllPases;
 
 async function deletePase(id){
   setSyncDot('syncing');
   try{await deleteDoc(doc(db,'pases',id));setSyncDot('ok');toast('Pase eliminado');}
-  catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
+  catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 }
 window.deletePase=deletePase;
 
@@ -1071,14 +1090,14 @@ window.deleteSelected=async function(){
     await batch.commit();
     const n=selectedIds.size;selectedIds.clear();setSyncDot('ok');
     toast(`${n} pedido${n!==1?'s':''} eliminado${n!==1?'s':''}`, 'ok');
-  }catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
+  }catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 };
 
 window.confirmDelOrder=async function(id,num){
   if(!confirm(`¿Eliminar pedido #${num}?`))return;
   setSyncDot('syncing');
   try{await deleteDoc(doc(db,'orders',id));selectedIds.delete(id);setSyncDot('ok');toast(`Pedido #${num} eliminado`);}
-  catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
+  catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 };
 
 window.clearAllOrders=async function(){
@@ -1088,7 +1107,7 @@ window.clearAllOrders=async function(){
     const snap=await getDocs(collection(db,'orders'));
     const batch=writeBatch(db);snap.forEach(d=>batch.delete(d.ref));
     await batch.commit();selectedIds.clear();setSyncDot('ok');toast('Pedidos borrados');
-  }catch(e){setSyncDot('err');toast('Error: '+e.message,'err');}
+  }catch(e){setSyncDot('err');toast(friendlyError(e),'err');}
 };
 
 /* ══ OCR ══ */
@@ -1112,22 +1131,8 @@ window.autoDetectNumber=async function(i){
   pendingOrders[i].hint='⏳ Analizando…';pendingOrders[i].hintColor='var(--muted)';renderMultiPreviews();
   const inputEl=document.getElementById('order-num-'+i);if(inputEl)inputEl.disabled=true;
   try{
-    const resized=await resizeImageForOCR(item.imgDataUrl,1600);
-    const base64=resized.split(',')[1];
-    const formData=new FormData();
-    formData.append('base64Image','data:image/jpeg;base64,'+base64);
-    formData.append('apikey','K81160960288957');
-    formData.append('language','spa');
-    formData.append('isOverlayRequired','false');
-    formData.append('detectOrientation','true');
-    formData.append('scale','true');
-    formData.append('OCREngine','2');
-    const response=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
-    const data=await response.json();
-    let text='';
-    if(data.ParsedResults&&data.ParsedResults.length>0)text=data.ParsedResults[0].ParsedText||'';
-    else if(data.ErrorMessage)throw new Error(data.ErrorMessage);
-    const found=extractBestNumber(text);
+    pendingOrders[i].hint='⏳ Escaneando…';pendingOrders[i].hintColor='var(--muted)';renderMultiPreviews();
+    const found = await ocrWithRetries(item.imgDataUrl);
     if(found){pendingOrders[i].orderNumber=found;pendingOrders[i].hint='✅ #'+found+' detectado';pendingOrders[i].hintColor='var(--green)';}
     else{pendingOrders[i].hint='⚠️ No detectado — ingresá manualmente';pendingOrders[i].hintColor='var(--orange)';}
   }catch(e){pendingOrders[i].hint='❌ '+e.message;pendingOrders[i].hintColor='var(--red)';}
@@ -1139,35 +1144,90 @@ window.scanAllPending = async function(){
   const btn = document.getElementById('scanPendingBtn');
   if(btn){ btn.disabled=true; btn.textContent='⏳ Escaneando…'; }
   let ok=0;
-  for(let i=0;i<pendingOrders.length;i++){
-    // skip if already has a real number
-    if(pendingOrders[i].orderNumber && pendingOrders[i].orderNumber !== 'desconocido') continue;
-    pendingOrders[i].hint='⏳ Analizando…'; pendingOrders[i].hintColor='var(--muted)';
+  // Resume: skip already-detected ones (persisted in pendingOrders state)
+  const toScan = pendingOrders.map((o,i)=>i).filter(i=>
+    !pendingOrders[i].orderNumber || pendingOrders[i].orderNumber==='desconocido'
+  );
+  for(const i of toScan){
+    pendingOrders[i].hint=`⏳ Escaneando (${ok+1}/${toScan.length})…`; pendingOrders[i].hintColor='var(--muted)';
     renderMultiPreviews();
     try{
-      const resized=await resizeImageForOCR(pendingOrders[i].imgDataUrl,1600);
-      const base64=resized.split(',')[1];
-      const formData=new FormData();
+      const found=await ocrWithRetries(pendingOrders[i].imgDataUrl);
+      if(found){
+        pendingOrders[i].orderNumber=found;
+        pendingOrders[i].hint='✅ #'+found+' detectado';
+        pendingOrders[i].hintColor='var(--green)';
+        ok++;
+      } else {
+        pendingOrders[i].hint='⚠️ No detectado — ingresá manualmente';
+        pendingOrders[i].hintColor='var(--orange)';
+      }
+    }catch(e){
+      pendingOrders[i].hint='❌ Error — tocá 🔍 para reintentar';
+      pendingOrders[i].hintColor='var(--red)';
+    }
+    renderMultiPreviews();
+    await new Promise(r=>setTimeout(r,350));
+  }
+  if(btn){ btn.disabled=false; btn.textContent='🔍 Escanear'; }
+  const skipped=pendingOrders.length-toScan.length;
+  toast(`✅ ${ok} detectados${toScan.length-ok>0?' · ⚠️ '+(toScan.length-ok)+' sin resultado':''}${skipped?' · '+skipped+' ya tenían número':''}`, 'ok');
+};
+
+async function ocrWithRetries(imgDataUrl){
+  // Attempt 1: Engine 2, normal orientation
+  // Attempt 2: Engine 1, normal orientation  
+  // Attempt 3: Engine 2, image rotated 90°
+  const attempts = [
+    {engine:'2', rotate:0},
+    {engine:'1', rotate:0},
+    {engine:'2', rotate:90},
+  ];
+  for(const {engine, rotate} of attempts){
+    try{
+      let src = imgDataUrl;
+      if(rotate){
+        src = await rotateImage(imgDataUrl, rotate);
+      }
+      const resized = await resizeImageForOCR(src, 1600);
+      const base64 = resized.split(',')[1];
+      const formData = new FormData();
       formData.append('base64Image','data:image/jpeg;base64,'+base64);
       formData.append('apikey','K81160960288957');
       formData.append('language','spa');
       formData.append('isOverlayRequired','false');
       formData.append('detectOrientation','true');
       formData.append('scale','true');
-      formData.append('OCREngine','2');
-      const res=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
-      const data=await res.json();
-      let text=data.ParsedResults?.[0]?.ParsedText||'';
-      const found=extractBestNumber(text);
-      if(found){ pendingOrders[i].orderNumber=found; pendingOrders[i].hint='✅ #'+found+' detectado'; pendingOrders[i].hintColor='var(--green)'; ok++; }
-      else{ pendingOrders[i].hint='⚠️ No detectado'; pendingOrders[i].hintColor='var(--orange)'; }
-    }catch(e){ pendingOrders[i].hint='❌ Error'; pendingOrders[i].hintColor='var(--red)'; }
-    renderMultiPreviews();
-    await new Promise(r=>setTimeout(r,350));
+      formData.append('OCREngine', engine);
+      const res = await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
+      const data = await res.json();
+      const text = data.ParsedResults?.[0]?.ParsedText || '';
+      const found = extractBestNumber(text);
+      if(found) return found;
+    }catch(e){ /* try next */ }
+    await new Promise(r=>setTimeout(r,300));
   }
-  if(btn){ btn.disabled=false; btn.textContent='🔍 Escanear'; }
-  toast(`Escaneados: ✅ ${ok} / ${pendingOrders.length}`, 'ok');
-};
+  return null;
+}
+
+function rotateImage(dataUrl, degrees){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const rad=degrees*Math.PI/180;
+      const sin=Math.abs(Math.sin(rad)),cos=Math.abs(Math.cos(rad));
+      canvas.width=Math.round(img.height*sin+img.width*cos);
+      canvas.height=Math.round(img.height*cos+img.width*sin);
+      const ctx=canvas.getContext('2d');
+      ctx.translate(canvas.width/2,canvas.height/2);
+      ctx.rotate(rad);
+      ctx.drawImage(img,-img.width/2,-img.height/2);
+      resolve(canvas.toDataURL('image/jpeg',0.92));
+    };
+    img.src=dataUrl;
+  });
+}
 
 function extractBestNumber(text){
   if(!text||text.trim()==='NOTFOUND')return null;
@@ -1184,16 +1244,21 @@ window.saveAllOrders=async function(){
   const resp=document.getElementById('order-resp').value.trim();
   if(!turno||!resp){toast('Completá Turno y Responsable','err');return}
   if(!pendingOrders.length){toast('No hay fotos cargadas','err');return}
+  if(!_isOnline){toast('Sin conexión — esperá a reconectar','err');return}
   setSyncDot('syncing');
+  const saveBtn=document.getElementById('saveOrderBtn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='⏳ Guardando…';}
   try{
-    const savedIds = [];
-    for(const item of pendingOrders){
+    const savedIds=[];
+    for(let idx=0;idx<pendingOrders.length;idx++){
+      const item=pendingOrders[idx];
       const num=(item.orderNumber||'').trim()||'desconocido';
-      const ref = await addDoc(collection(db,'orders'),{
+      if(saveBtn) saveBtn.textContent=`⏳ ${idx+1}/${pendingOrders.length}…`;
+      const docRef=await addDoc(collection(db,'orders'),{
         fecha:new Date().toISOString(),orderNumber:num,
         imageDataUrl:item.imgDataUrl,turno,responsable:resp
       });
-      savedIds.push(ref.id);
+      savedIds.push(docRef.id);
     }
     setSyncDot('ok');
     playSaveSound();
@@ -1202,7 +1267,12 @@ window.saveAllOrders=async function(){
     const n=pendingOrders.length;
     window.resetOrderForm();
     toast(`${n} pedido${n!==1?'s':''} guardado${n!==1?'s':''}`, 'ok');
-  }catch(e){setSyncDot('err');toast('Error al guardar: '+e.message,'err');}
+  }catch(e){
+    setSyncDot('err');
+    toast(friendlyError(e),'err');
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Guardar Todos';}
+  }
 };
 
 /* ══ DRAG & DROP ══ */
@@ -1473,20 +1543,7 @@ window.batchRescanAll = async function(){
   let ok=0, fail=0;
   for(const o of unknowns){
     try{
-      const resized = await resizeImageForOCR(o.imageDataUrl, 1600);
-      const base64 = resized.split(',')[1];
-      const formData = new FormData();
-      formData.append('base64Image','data:image/jpeg;base64,'+base64);
-      formData.append('apikey','K81160960288957');
-      formData.append('language','spa');
-      formData.append('isOverlayRequired','false');
-      formData.append('detectOrientation','true');
-      formData.append('scale','true');
-      formData.append('OCREngine','2');
-      const res = await fetch('https://api.ocr.space/parse/image',{method:'POST',body:formData});
-      const data = await res.json();
-      let text = data.ParsedResults?.[0]?.ParsedText || '';
-      const found = extractBestNumber(text);
+      const found = await ocrWithRetries(o.imageDataUrl);
       if(found){
         const {updateDoc} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         await updateDoc(doc(db,'orders',o.id),{orderNumber:found});
@@ -1501,7 +1558,7 @@ window.batchRescanAll = async function(){
 };
 
 /* ══ REALTIME LISTENERS ══ */
-function showConnectingBanner(){ const b=document.getElementById('connectingBanner'); if(b) b.classList.add('visible'); }
+function showConnectingBanner(msg){ const b=document.getElementById('connectingBanner'); if(!b)return; if(msg){const t=b.querySelector('span:last-child');if(t)t.textContent=msg;} b.classList.add('visible'); }
 function hideConnectingBanner(){ const b=document.getElementById('connectingBanner'); if(b) b.classList.remove('visible'); }
 
 function setupListeners(){
@@ -1514,16 +1571,23 @@ function setupListeners(){
     allPases=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderPaseHistory();
     if(!paseLoaded){ paseLoaded=true; checkAllLoaded(); }
+  },(err)=>{
+    setSyncDot('err');
+    showConnectingBanner(friendlyError(err));
   });
 
-  // Orders — cargamos sin imageDataUrl primero para velocidad
-  // Firestore no soporta proyecciones en onSnapshot web SDK, pero podemos
-  // paginarse lazy: cargamos metadata (sin imagen) y la imagen sólo al renderizar
   onSnapshot(query(collection(db,'orders'),orderBy('fecha','desc')),(snap)=>{
     allOrders=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderOrdersTable();
     if(!ordersLoaded){ ordersLoaded=true; checkAllLoaded(); }
     setSyncDot('ok');
+    hideConnectingBanner();
+  },(err)=>{
+    setSyncDot('err');
+    showConnectingBanner(friendlyError(err));
+    // Auto-retry after 5s
+    if(_retryTimer) clearTimeout(_retryTimer);
+    _retryTimer=setTimeout(()=>{ setupListeners(); },5000);
   });
 }
 
