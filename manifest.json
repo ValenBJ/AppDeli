@@ -1,0 +1,11 @@
+{
+  "name": "McDash · Delivery",
+  "short_name": "McDash",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#c8102e",
+  "icons": [
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
